@@ -12,6 +12,7 @@ app = create_fastapi_app(
 from fastapi.responses import HTMLResponse
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/web", response_class=HTMLResponse)
 async def home():
     """Home page for the Hugging Face Space."""
     return """
