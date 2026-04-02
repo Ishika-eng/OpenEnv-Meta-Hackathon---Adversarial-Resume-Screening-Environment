@@ -14,8 +14,8 @@ COPY . .
 # Set PYTHONPATH to include the current directory so server can find models
 ENV PYTHONPATH=/app
 
-# Expose port 8000
-EXPOSE 8000
+# Expose port 7860
+EXPOSE 7860
 
 # Run uvicorn server.app:app
-CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860"]
