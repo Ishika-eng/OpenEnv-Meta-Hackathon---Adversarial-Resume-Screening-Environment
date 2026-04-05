@@ -68,10 +68,10 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
             task_type=self._current_task_type
         )
 
-    def step(self, action: ResumeAction) -> ResumeObservation:
+    def step(self, action: ResumeAction) -> Any:
         """
         Evaluates the agent's action and ends the episode.
-        Returns ONLY a ResumeObservation object.
+        Returns (observation, reward, done, info)
         """
         if self._current_sample is None:
             return self._get_empty_observation(), 0.0, True, {"error": "Environment not reset"}
@@ -127,7 +127,7 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
         return ResumeObservation(
             resume_text="",
             job_description="",
-            task_type=self._current_task_type if self._current_task_type else "None"
+            task_type=self._current_task_type if self._current_task_type in ["easy", "medium", "hard"] else "easy"
         )
 
     @property
