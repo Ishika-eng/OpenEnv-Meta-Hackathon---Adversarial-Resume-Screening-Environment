@@ -40,28 +40,30 @@ from client import ResumeEnv
 from models import ResumeAction
 
 # Load environment variables
-load_dotenv()
+env_path = os.path.join(os.getcwd(), '.env')
+if os.path.exists(env_path):
+    load_dotenv(dotenv_path=env_path, override=True)
+else:
+    load_dotenv()
 
 # Environment Configuration
 API_KEY = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
-# API_BASE_URL is for the LLM provider (e.g. OpenAI or HF Router)
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
-# ENV_URL is for your specific OpenEnv environment server
-ENV_URL = os.getenv("ENV_URL", "http://localhost:8000")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o")
+ENV_URL = os.getenv("ENV_URL", "http://localhost:8000")
 
 # Task Configuration
 TASK_NAME = os.getenv("RESUME_TASK", "resume-screening")
 BENCHMARK = os.getenv("RESUME_BENCHMARK", "resume-eval")
-NUM_EPISODES = 5  # Changed from hardcoded to configurable
+NUM_EPISODES = 5
 
 # Model Parameters
 TEMPERATURE = 0.7
 MAX_TOKENS = 500
 
 # Scoring Configuration
-SUCCESS_SCORE_THRESHOLD = 0.6  # 60% accuracy needed for success
-MAX_REWARD_PER_EPISODE = 1.0  # Assuming each correct decision = 1.0 reward
+SUCCESS_SCORE_THRESHOLD = 0.6
+MAX_REWARD_PER_EPISODE = 1.0
 MAX_TOTAL_REWARD = NUM_EPISODES * MAX_REWARD_PER_EPISODE
 
 # System Prompt
@@ -90,17 +92,11 @@ SYSTEM_PROMPT = textwrap.dedent(
 ).strip()
 
 
-# ============================================================================
-# LOGGING FUNCTIONS (Mandatory Format)
-# ============================================================================
-
 def log_start(task: str, env: str, model: str) -> None:
-    """Log episode start in required format"""
     print(f"[START] task={task} env={env} model={model}", flush=True)
 
 
 def log_step(step: int, action: str, reward: float, done: bool, error: Optional[str]) -> None:
-    """Log each step in required format"""
     error_val = error if error else "null"
     done_val = str(done).lower()
     print(
@@ -110,7 +106,6 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
 
 
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
-    """Log episode end in required format"""
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
     success_val = str(success).lower()
     print(
@@ -119,19 +114,13 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
     )
 
 
-# ============================================================================
-# PROMPT BUILDING
-# ============================================================================
-
 def build_user_prompt(
     episode: int,
     job_description: str,
     resume_text: str,
     history: List[str]
 ) -> str:
-    """Build user prompt with job description and resume"""
     history_block = "\n".join(history[-3:]) if history else "None"
-    
     return textwrap.dedent(
         f"""
         Episode: {episode}
@@ -150,10 +139,6 @@ def build_user_prompt(
     ).strip()
 
 
-# ============================================================================
-# LLM INTERACTION
-# ============================================================================
-
 def get_model_decision(
     client: OpenAI,
     episode: int,
@@ -161,14 +146,6 @@ def get_model_decision(
     resume_text: str,
     history: List[str]
 ) -> dict:
-    """
-    Get structured decision from LLM
-    
-    Returns:
-        dict with keys: decision, fraud_flag, confidence
-        Falls back to safe default on any error
-    """
-    # Fallback action (safe default - reject with low confidence)
     fallback_action = {
         "decision": "reject",
         "fraud_flag": False,
@@ -178,12 +155,6 @@ def get_model_decision(
     user_prompt = build_user_prompt(episode, job_description, resume_text, history)
     
     try:
-        # Check API key validity
-        if not API_KEY or API_KEY == "your_api_key":
-            print(f"[DEBUG] Invalid API key, using fallback", flush=True)
-            return fallback_action
-        
-        # Call OpenAI API
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
@@ -192,171 +163,75 @@ def get_model_decision(
             ],
             temperature=TEMPERATURE,
             max_tokens=MAX_TOKENS,
-            response_format={"type": "json_object"},  # Force JSON output
+            response_format={"type": "json_object"},
             stream=False,
         )
         
-        # Parse response
-        content_str = response.choices[0].message.content or "{}"
-        content = json.loads(content_str)
+        content = json.loads(response.choices[0].message.content or "{}")
         
-        # Validate response structure
-        decision = content.get("decision", "").lower()
-        confidence = content.get("confidence", 0.5)
-        fraud_flag = content.get("fraud_flag", False)
-        
-        # Validation checks
-        if decision not in ["accept", "reject"]:
-            print(f"[DEBUG] Invalid decision: {decision}, using fallback", flush=True)
-            return fallback_action
-        
-        if not isinstance(confidence, (int, float)) or not (0.0 <= confidence <= 1.0):
-            print(f"[DEBUG] Invalid confidence: {confidence}, using fallback", flush=True)
-            return fallback_action
-        
-        if not isinstance(fraud_flag, bool):
-            print(f"[DEBUG] Invalid fraud_flag: {fraud_flag}, using fallback", flush=True)
-            return fallback_action
-        
-        # Valid response
-        print(f"[DEBUG] Valid LLM response: {decision}, confidence={confidence:.2f}", flush=True)
         return {
-            "decision": decision,
-            "fraud_flag": fraud_flag,
-            "confidence": float(confidence)
+            "decision": content.get("decision", "reject").lower(),
+            "fraud_flag": bool(content.get("fraud_flag", False)),
+            "confidence": float(content.get("confidence", 0.5))
         }
         
-    except json.JSONDecodeError as e:
-        print(f"[DEBUG] JSON parse error: {e}, using fallback", flush=True)
-        return fallback_action
     except Exception as e:
         print(f"[DEBUG] LLM request failed: {e}, using fallback", flush=True)
         return fallback_action
 
 
-# ============================================================================
-# MAIN EXECUTION
-# ============================================================================
-
 async def main() -> None:
-    """Main execution loop following benchmark format"""
-    
-    # Initialize OpenAI client (Points to LLM)
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
-    
-    # Initialize environment (Points to OpenEnv Server)
     env = ResumeEnv(base_url=ENV_URL)
     
-    # Tracking variables
     history: List[str] = []
     rewards: List[float] = []
     steps_taken = 0
-    score = 0.0
-    success = False
     
-    # Log episode start
     log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
     
     try:
-        # ================================================================
-        # MAIN EPISODE LOOP (5 steps = 5 resume evaluations)
-        # ================================================================
         for episode in range(1, NUM_EPISODES + 1):
-            
-            # Reset environment to get new resume
             observation = await env.reset()
             
-            # Extract observation data
-            job_description = observation.job_description
-            resume_text = observation.resume_text
-            
-            # Get LLM decision
             action_dict = get_model_decision(
                 client=client,
                 episode=episode,
-                job_description=job_description,
-                resume_text=resume_text,
+                job_description=observation.job_description,
+                resume_text=observation.resume_text,
                 history=history
             )
             
-            # Create action object
-            action = ResumeAction(
-                decision=action_dict["decision"],
-                fraud_flag=action_dict["fraud_flag"],
-                confidence=action_dict["confidence"]
-            )
-            
-            # Format action string for logging
+            action = ResumeAction(**action_dict)
             action_str = f"{action.decision}(fraud={action.fraud_flag},conf={action.confidence:.2f})"
             
-            # Take step in environment
             observation = await env.step(action)
             
-            # Extract results
-            reward = observation.reward if hasattr(observation, 'reward') else 0.0
-            done = observation.done if hasattr(observation, 'done') else (episode == NUM_EPISODES)
-            error = observation.error if hasattr(observation, 'error') else None
+            reward = getattr(observation, 'reward', 0.0)
+            done = getattr(observation, 'done', episode == NUM_EPISODES)
             
-            # Track metrics
             rewards.append(reward)
             steps_taken = episode
             
-            # Log step
-            log_step(
-                step=episode,
-                action=action_str,
-                reward=reward,
-                done=done,
-                error=error
-            )
+            log_step(episode, action_str, reward, done, None)
+            history.append(f"Ep {episode}: {action.decision} -> rew={reward:+.2f}")
             
-            # Update history
-            history.append(
-                f"Episode {episode}: {action.decision} (conf={action.confidence:.2f}) -> reward={reward:+.2f}"
-            )
-            
-            # Check if episode should end early
             if done:
                 break
         
-        # ================================================================
-        # CALCULATE FINAL SCORE
-        # ================================================================
-        # Normalize total reward to [0, 1]
         total_reward = sum(rewards)
-        score = total_reward / MAX_TOTAL_REWARD if MAX_TOTAL_REWARD > 0 else 0.0
-        score = min(max(score, 0.0), 1.0)  # Clamp to [0, 1]
-        
-        # Determine success
+        score = min(max(total_reward / MAX_TOTAL_REWARD, 0.0), 1.0) if MAX_TOTAL_REWARD > 0 else 0.0
         success = score >= SUCCESS_SCORE_THRESHOLD
         
     except Exception as e:
-        print(f"[DEBUG] Critical error in main loop: {e}", flush=True)
+        print(f"[DEBUG] Critical error: {e}", flush=True)
         success = False
     
     finally:
-        # ================================================================
-        # CLEANUP & FINAL LOGGING
-        # ================================================================
-        try:
-            # Close environment if it has cleanup method
-            if hasattr(env, 'close'):
-                await env.close()
-        except Exception as e:
-            print(f"[DEBUG] env.close() error: {e}", flush=True)
-        
-        # Always log end (even on exception)
-        log_end(
-            success=success,
-            steps=steps_taken,
-            score=score,
-            rewards=rewards
-        )
+        if hasattr(env, 'close'):
+            await env.close()
+        log_end(success, steps_taken, score, rewards)
 
-
-# ============================================================================
-# ENTRY POINT
-# ============================================================================
 
 if __name__ == "__main__":
     asyncio.run(main())
