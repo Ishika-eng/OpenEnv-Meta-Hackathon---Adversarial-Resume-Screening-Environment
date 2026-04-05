@@ -39,7 +39,7 @@ from dotenv import load_dotenv
 from client import ResumeEnv
 from models import ResumeAction
 
-# Load environment variables
+# Load environment variables explicitly from the current directory
 env_path = os.path.join(os.getcwd(), '.env')
 if os.path.exists(env_path):
     load_dotenv(dotenv_path=env_path, override=True)
@@ -47,7 +47,13 @@ else:
     load_dotenv()
 
 # Environment Configuration
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY") or os.getenv("API_KEY")
+# We check for keys in a specific order to avoid using empty/expired ones accidentally
+API_KEY = (
+    os.getenv("API_KEY") or 
+    os.getenv("GROQ_API_KEY") or 
+    os.getenv("OPENAI_API_KEY") or 
+    os.getenv("HF_TOKEN")
+)
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o")
 ENV_URL = os.getenv("ENV_URL", "http://localhost:8000")
@@ -216,8 +222,7 @@ async def main() -> None:
             log_step(episode, action_str, reward, done, None)
             history.append(f"Ep {episode}: {action.decision} -> rew={reward:+.2f}")
             
-            if done:
-                break
+            # Note: We continue for NUM_EPISODES to get a full aggregate score
         
         total_reward = sum(rewards)
         score = min(max(total_reward / MAX_TOTAL_REWARD, 0.0), 1.0) if MAX_TOTAL_REWARD > 0 else 0.0
