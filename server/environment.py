@@ -39,7 +39,7 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
         # Initialize state variables
         self._current_task_type: str = "easy"
         self._current_index: int = 0
-        self._current_sample: Dict[str, Any] = {}
+        self._current_sample = None
         self._step_count: int = 0
 
     def reset(self) -> ResumeObservation:
@@ -73,6 +73,9 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
         Evaluates the agent's action and ends the episode.
         Returns ONLY a ResumeObservation object.
         """
+        if self._current_sample is None:
+            return self._get_empty_observation(), 0.0, True, {"error": "Environment not reset"}
+
         # 1. Validation Logic
         is_invalid = (
             action.decision not in ["accept", "reject"] or
@@ -87,8 +90,9 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
         done = True  # Each episode contains exactly one resume action
         
         # 2. Extract ground truth
-        expected_decision = self._current_sample["expected_decision"]
-        is_fraud_truth = self._current_sample["is_fraud"]
+        print("DEBUG SAMPLE:", self._current_sample)
+        expected_decision = self._current_sample.get("expected_decision", "reject")
+        is_fraud_truth = self._current_sample.get("is_fraud", False)
 
         # 3. Reward Calculation (STRICT)
         reward = 0.0
