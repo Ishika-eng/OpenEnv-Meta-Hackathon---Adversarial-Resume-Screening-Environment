@@ -1,6 +1,6 @@
 ---
 title: Adversarial Resume Screening Environment
-emoji: 📄
+emoji: "\U0001F4C4"
 colorFrom: blue
 colorTo: indigo
 sdk: docker
@@ -9,81 +9,158 @@ app_port: 7860
 tags: [openenv]
 ---
 
-# Adversarial Resume Screening 📄♎
+# Adversarial Resume Screening
 
-## 💡 Overview & Motivation
-As automated hiring systems become ubiquitous, they become targets for **Adversarial Resumes**—CVs specifically crafted with fabricated credentials or "keyword stuffing" to trick AI filters.  
+## Overview & Motivation
 
-The **Adversarial Resume Screening Environment** provides a benchmark for evaluating the robustness of agentic AI in HR technology. Unlike simple parsers, agents in this environment must engage with complex, multi-modal evidence (Experience vs. Age, Credential Validation) to make fair and accurate hiring decisions while identifying fraudulent submissions.
+Automated hiring systems are increasingly targeted by **adversarial resumes** — CVs crafted with fabricated credentials, inflated titles, and keyword stuffing to bypass AI filters. This environment benchmarks how well AI agents can **investigate, verify, and make robust hiring decisions** under adversarial conditions.
 
----
-
-## 🛠️ System Specifications
-
-### 📝 Observation Space
-The agent receives a `ResumeObservation` object with:
-- **`resume_text`**: The raw text of the candidate's CV.
-- **`job_description`**: The specific requirements and "red lines" for the role.
-- **`task_type`**: Metadata indicating the complexity level for benchmarking.
-
-### 🛠️ Action Space
-The agent provides a `ResumeAction` decision:
-- **`decision`**: `accept` or `reject`.
-- **`fraud_flag`**: `true` if suspicious data points are found.
-- **`confidence`**: (float 0.0-1.0) Indicating certainty level.
-
-### 💰 Reward Function (v1.1)
-The environment uses a multi-faceted reward signal (0.0 to 1.0):
-- **Decision Accuracy (+0.5)**: Awarded for matching the ground-truth hiring decision.
-- **Fraud Detection (+0.3)**: Awarded for correctly identifying (or correctly clearing) fraud.
-- **Confidence Calibration (+0.2)**: Awarded for high-confidence correct decisions.
+Unlike single-shot classifiers, agents must conduct **multi-step investigations**: reviewing resume sections, checking references, verifying credentials, and asking clarifying questions before reaching a decision. This mirrors the real-world HR due diligence process.
 
 ---
 
-## 🎮 Task Difficulty & Graders
+## Environment Design
 
-| Task Level | Description | Expected Difficulty |
-| :--- | :--- | :--- |
-| **Easy** | Clear match or clear mismatch with no fraud. | ⭐ (Low) |
-| **Medium** | Subtle skill mismatches requiring careful JD analysis. | ⭐⭐ (Medium) |
-| **Hard** | Adversarial cases: Professional CVs with impossible dates or fake credentials. | ⭐⭐⭐ (High) |
+### Multi-Step Episode Flow
+
+Each episode follows an investigation workflow:
+
+1. **Initial**: Agent receives the job description and candidate header
+2. **Investigation**: Agent gathers evidence through 4 action types
+3. **Decision**: Agent submits final accept/reject with fraud assessment
+
+Episodes have a **step budget** that varies by difficulty (easy: 6, medium: 8, hard: 10). If the budget runs out without a decision, the episode ends with zero reward.
+
+### Observation Space (`ResumeObservation`)
+
+| Field | Type | Description |
+|:---|:---|:---|
+| `task_type` | `"easy"\|"medium"\|"hard"` | Difficulty tier |
+| `phase` | `"initial"\|"investigation"\|"decision_made"` | Episode phase |
+| `job_description` | `string` | Role requirements |
+| `visible_sections` | `Dict[str, str]` | Resume sections revealed so far |
+| `available_actions` | `List[str]` | Valid action types |
+| `clarification_response` | `string\|null` | Answer to last clarification |
+| `reference_response` | `string\|null` | Last reference check result |
+| `verification_result` | `string\|null` | Last credential verification |
+| `steps_remaining` | `int` | Step budget countdown |
+| `feedback` | `string\|null` | Environment hints/warnings |
+
+### Action Space (`ResumeAction`)
+
+| Action Type | Fields | Effect |
+|:---|:---|:---|
+| `view_section` | `section` (header/summary/experience/education/skills/projects/references) | Reveals a resume section |
+| `ask_clarification` | `question` (free text) | Returns candidate's answer |
+| `check_reference` | `reference_id` (ref1/ref2) | Returns reference response |
+| `verify_credential` | — | Returns education/employment/cert verification status |
+| `submit_decision` | `decision`, `fraud_flag`, `confidence`, `fraud_reasoning` | Terminal action, ends episode |
+
+### Reward Function
+
+Rewards accumulate across the episode from two sources:
+
+**Investigation rewards (per-step):**
+| Action | Reward |
+|:---|:---|
+| View high-value section (experience/education/skills) | +0.03 |
+| View other section | +0.01 |
+| Relevant clarification answer | +0.03 |
+| Generic clarification answer | +0.01 |
+| Reference check (fraud case) | +0.05 |
+| Reference check (non-fraud) | +0.02 |
+| Credential verification (reveals failure) | +0.05 |
+| Credential verification (all pass) | +0.02 |
+
+**Terminal decision reward:**
+| Component | Reward |
+|:---|:---|
+| Decision correct | +0.35 |
+| Decision wrong | -0.35 |
+| Fraud flag correct | +0.25 |
+| Fraud flag wrong | -0.25 |
+| Confidence calibration (>= 0.7 + both correct) | +0.10 |
+| Investigation thoroughness (3+ sections + ref/verify) | +0.10 |
+| Fraud reasoning quality (mentions indicators) | +0.10 |
+| Early termination penalty (submit on step 1) | -0.15 |
+
+**Total reward range**: [-1.0, 1.0] per episode.
 
 ---
 
-## 🚀 Setup & Usage
+## Task Difficulty & Graders
 
-### 1. Local Setup
+| Tier | Resumes | Step Budget | Description |
+|:---|:---:|:---:|:---|
+| **Easy** | 12 | 6 | Clear match/mismatch, obvious fraud (impossible timelines, fake institutions) |
+| **Medium** | 12 | 8 | Subtle skill gaps, partial matches, embellished but plausible resumes |
+| **Hard** | 12 | 10 | Title inflation, scope exaggeration, references that contradict claims, sophisticated fabrication |
+
+Graders are **deterministic**: all reward computation uses ground-truth fields in the dataset (expected_decision, is_fraud, fraud_indicators). No LLM judge is needed.
+
+---
+
+## Setup & Usage
+
+### Local Setup
+
 ```bash
-# Install requirements
 pip install -r requirements.txt
-
-# Start the environment server
 uvicorn server.app:app --host 0.0.0.0 --port 7860
 ```
 
-### 2. Docker Setup
+### Docker Setup
+
 ```bash
 docker build -t resume-env .
 docker run -p 7860:7860 resume-env
 ```
 
-### 3. Inference & Evaluation
-Configure your `.env` with your LLM provider (OpenAI/Groq) and the `ENV_URL` pointing to your Space, then run:
+### Running Inference
+
+Configure environment variables:
 ```bash
-python3 inference.py
+export API_BASE_URL="https://api.groq.com/openai/v1"   # or your LLM endpoint
+export MODEL_NAME="llama-3.3-70b-versatile"             # or your model
+export HF_TOKEN="your-api-key"
+export ENV_URL="http://localhost:7860"                   # or your HF Space URL
 ```
 
----
+Run the baseline agent:
+```bash
+python inference.py
+```
 
-## 📊 Baseline Scores
-Evaluated using **Llama-3.3-70b** on Groq across the full 5-resume benchmark set.
-
-| Metric | Score |
-| :--- | :--- |
-| **Success Rate** | 100% |
-| **Aggregate Score** | **1.000** / 1.000 |
-| **Avg. Reward/Step** | 1.00 |
+The script runs 9 episodes (3 per difficulty tier) and emits structured `[START]`/`[STEP]`/`[END]` logs.
 
 ---
-**OpenEnv Compliance**: Level 3 (Production Ready) ✅  
+
+## Baseline Scores
+
+Evaluated using **Llama-3.3-70B** via Groq across 9 episodes (3 easy, 3 medium, 3 hard):
+
+| Tier | Avg Score | Avg Steps |
+|:---|:---:|:---:|
+| Easy | ~0.80 | 4-5 |
+| Medium | ~0.65 | 5-6 |
+| Hard | ~0.45 | 6-8 |
+| **Overall** | **~0.63** | ~5.5 |
+
+Hard-tier resumes with subtle title inflation and reference contradictions consistently challenge frontier models.
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|:---|:---|:---|
+| POST | `/reset` | Reset environment, returns initial observation |
+| POST | `/step` | Submit action, returns observation with reward |
+| GET | `/state` | Get current internal state |
+| GET | `/health` | Health check |
+| GET | `/` | Web UI |
+
+---
+
+**OpenEnv Compliance**: v2.0.0
 **Deployment**: [ishikamahadar-resume-env.hf.space](https://huggingface.co/spaces/IshikaMahadar/resume-env)

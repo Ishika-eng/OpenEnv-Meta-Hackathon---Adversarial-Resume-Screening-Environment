@@ -2,21 +2,1149 @@
   "easy": [
     {
       "id": "E1",
-      "resume": "Software Engineer \u2013 Backend (5 years)\n\nExperience:\n- Infosys (2019\u20132024)\n- Developed REST APIs using Python and Flask\n- Designed microservices architecture\n\nSkills:\nPython, Flask, AWS, Docker, MySQL\n\nProjects:\n- Built internal analytics dashboard",
-      "job": "Looking for backend developer with 3+ years experience in Python and APIs.",
-      "is_fraud": false,
-      "expected_decision": "accept",
-      "reason": "Strong skill and experience match"
+      "job_description": "Backend Developer: 3+ years Python experience, REST API development, SQL databases. Remote position.",
+      "resume_sections": {
+        "header": "Amit Sharma | amit.sharma@email.com | +91-9876543210 | Bangalore, India",
+        "summary": "Backend developer with 5 years of experience building scalable web services and REST APIs using Python.",
+        "experience": "Software Engineer, Infosys (2019-2024)\n- Developed REST APIs using Python and Flask serving 50k requests/day\n- Designed microservices architecture for payment processing module\n- Reduced API response times by 40% through query optimization\n\nJunior Developer, TCS (2017-2019)\n- Built internal tools using Python and Django\n- Maintained PostgreSQL databases with 10M+ records",
+        "education": "B.Tech Computer Science, VIT Vellore (2013-2017)\nGPA: 8.2/10",
+        "skills": "Python, Flask, Django, PostgreSQL, MySQL, AWS, Docker, Redis, Git",
+        "projects": "- Payment Gateway Integration: Built async payment processing pipeline handling 1000 TPS\n- Log Analytics Dashboard: Real-time log aggregation using ELK stack",
+        "references": "Rahul Mehta, Engineering Manager at Infosys | rahul.mehta@infosys.com\nPreeti Nair, Tech Lead at TCS | preeti.nair@tcs.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Rahul Mehta", "response": "Amit was a reliable backend engineer. He worked on our payment module and delivered on time. I would recommend him."},
+        "ref2": {"name": "Preeti Nair", "response": "Amit worked under me for 2 years. Good Python skills, solid team player."}
+      },
+      "clarification_answers": {
+        "experience_depth": "I primarily used Flask for REST APIs and Django for internal tools. Most of my work involved designing database schemas and writing optimized SQL queries.",
+        "career_gap": "No gaps in my employment history."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Strong match: 5+ years Python experience, REST API expertise, SQL databases. All credentials verified."
+      }
     },
     {
       "id": "E2",
-      "resume": "Senior Software Engineer (15 years)\n\nExperience:\n- Google (2009\u20132024)\n- Led large-scale distributed systems\n\nNote: Candidate age mentioned as 23",
-      "job": "Senior Software Engineer with 5+ years experience.",
-      "is_fraud": true,
-      "expected_decision": "reject",
-      "reason": "Impossible experience claim"
+      "job_description": "Frontend Developer: React.js, 2+ years experience, responsive design skills required.",
+      "resume_sections": {
+        "header": "Sarah Chen | sarah.chen@email.com | +1-415-555-0123 | San Francisco, CA",
+        "summary": "Frontend developer specializing in React.js with 3 years of professional experience building modern web applications.",
+        "experience": "Frontend Engineer, Stripe (2021-2024)\n- Built React components for the merchant dashboard\n- Implemented responsive designs using CSS Grid and Flexbox\n- Wrote unit tests with Jest achieving 85% coverage\n\nUI Developer Intern, Airbnb (Summer 2020)\n- Created reusable React component library\n- Collaborated with design team on mobile-first layouts",
+        "education": "B.S. Computer Science, UC Berkeley (2017-2021)\nGPA: 3.7/4.0",
+        "skills": "React.js, TypeScript, JavaScript, HTML5, CSS3, Jest, Webpack, Figma, Git",
+        "projects": "- E-commerce Dashboard: Built responsive admin panel with React and TypeScript\n- Weather App: Progressive web app with offline support using service workers",
+        "references": "James Liu, Senior Engineer at Stripe | james.liu@stripe.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "James Liu", "response": "Sarah was an excellent frontend engineer. She built key components for our merchant dashboard. Strong React skills and great eye for design."}
+      },
+      "clarification_answers": {
+        "experience_depth": "I have deep experience with React hooks, context API, and Redux for state management. I also have experience with Next.js for server-side rendering.",
+        "preferred_tools": "I primarily use TypeScript with React, and Jest for testing."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Clear match: 3 years React experience at reputable companies, responsive design skills demonstrated."
+      }
+    },
+    {
+      "id": "E3",
+      "job_description": "Data Scientist: Python, machine learning, 3+ years experience. Must have experience with production ML systems.",
+      "resume_sections": {
+        "header": "Carlos Rivera | carlos.r@email.com | +1-212-555-0456 | New York, NY",
+        "summary": "Pastry chef with 8 years of experience in fine dining restaurants. Passionate about creating innovative dessert menus.",
+        "experience": "Head Pastry Chef, Le Bernardin (2020-2024)\n- Designed seasonal dessert menus for Michelin 3-star restaurant\n- Managed team of 4 pastry cooks\n- Reduced food waste by 25% through better inventory management\n\nPastry Cook, Eleven Madison Park (2016-2020)\n- Prepared desserts for 200+ covers nightly\n- Developed new plating techniques",
+        "education": "Associate Degree, Culinary Institute of America (2014-2016)\nSpecialization: Pastry Arts",
+        "skills": "French pastry techniques, chocolate tempering, sugar work, menu planning, kitchen management, ServSafe certified",
+        "projects": "- Created award-winning dessert tasting menu for James Beard dinner\n- Developed gluten-free pastry line for restaurant",
+        "references": "Marie Dupont, Executive Chef at Le Bernardin | m.dupont@lebern.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Marie Dupont", "response": "Carlos is an exceptional pastry chef. His creativity and attention to detail are outstanding."}
+      },
+      "clarification_answers": {
+        "technical_skills": "My technical skills are in pastry arts and kitchen management. I do not have programming or data science experience.",
+        "career_transition": "I have not pursued any data science training or certifications."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Complete field mismatch: candidate is a pastry chef applying for a data scientist role. No relevant skills or experience."
+      }
+    },
+    {
+      "id": "E4",
+      "job_description": "DevOps Engineer: AWS, Kubernetes, CI/CD pipelines, 2+ years experience.",
+      "resume_sections": {
+        "header": "Priya Patel | priya.patel@email.com | +91-9988776655 | Mumbai, India",
+        "summary": "Marketing coordinator with 4 years of experience in digital marketing campaigns and social media management.",
+        "experience": "Marketing Coordinator, Ogilvy India (2020-2024)\n- Managed social media accounts for 5 major clients\n- Created content calendars and ran Facebook/Instagram ad campaigns\n- Increased client engagement by 60% through targeted campaigns\n\nMarketing Intern, WPP (2019-2020)\n- Assisted in market research and competitor analysis\n- Created presentation decks for client pitches",
+        "education": "MBA Marketing, IIM Indore (2017-2019)\nB.Com, Mumbai University (2014-2017)",
+        "skills": "Digital marketing, Google Analytics, SEO/SEM, Canva, Microsoft Office, Social media management",
+        "projects": "- Launched viral Instagram campaign reaching 2M impressions\n- Built SEO strategy increasing organic traffic by 150%",
+        "references": "Vikram Singh, Creative Director at Ogilvy | vikram.s@ogilvy.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Vikram Singh", "response": "Priya is a talented marketing professional. She consistently delivers creative campaign ideas and meets deadlines."}
+      },
+      "clarification_answers": {
+        "technical_skills": "My technical skills are in marketing tools like Google Analytics, Hootsuite, and Canva. I have no experience with cloud infrastructure or DevOps.",
+        "career_transition": "I am not looking to transition into technical roles."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Complete field mismatch: marketing professional applying for DevOps role. No relevant technical skills."
+      }
+    },
+    {
+      "id": "E5",
+      "job_description": "Senior Software Engineer: 5+ years experience, distributed systems, Java or Go preferred.",
+      "resume_sections": {
+        "header": "Michael Zhang | Age: 23 | m.zhang@email.com | +1-650-555-0789 | Palo Alto, CA",
+        "summary": "Senior Software Engineer with 15 years of experience in distributed systems and large-scale architecture at top tech companies.",
+        "experience": "Principal Engineer, Google (2009-2024)\n- Led team of 20 engineers building Google's core search infrastructure\n- Designed distributed systems handling 10B+ queries/day\n- Published 5 papers on distributed consensus algorithms\n\nSenior Engineer, Facebook (2005-2009)\n- Built real-time messaging infrastructure for Facebook Messenger\n- Scaled systems from 1M to 100M daily active users",
+        "education": "Ph.D. Computer Science, MIT (2002-2005)\nB.S. Computer Science, Stanford (1998-2002)",
+        "skills": "Java, Go, C++, Distributed Systems, Kubernetes, gRPC, Protocol Buffers, Raft, Paxos",
+        "projects": "- Designed Google's next-generation query routing system\n- Created open-source distributed consensus library (10k GitHub stars)",
+        "references": "Jeff Dean, SVP at Google | jeff.dean@google.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Jeff Dean", "response": "I'm not familiar with a Michael Zhang on my team. Please verify the reference."}
+      },
+      "clarification_answers": {
+        "age_discrepancy": "I started college early through an accelerated program.",
+        "experience_timeline": "I have been working in the industry since 2005."
+      },
+      "verification_data": {
+        "education_verified": false,
+        "employment_dates_verified": false,
+        "certifications_valid": false
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": true,
+        "fraud_indicators": ["age_experience_impossible", "reference_denial", "timeline_impossible"],
+        "reasoning": "Candidate claims 15 years experience but is only 23 years old. Claims PhD from MIT completed at age 2. Reference at Google denies knowing the candidate."
+      }
+    },
+    {
+      "id": "E6",
+      "job_description": "Mobile Developer: iOS or Android, Swift or Kotlin, 2+ years experience.",
+      "resume_sections": {
+        "header": "Lisa Thompson | lisa.t@email.com | +1-310-555-0321 | Los Angeles, CA",
+        "summary": "iOS developer with 4 years of experience building consumer-facing mobile applications.",
+        "experience": "iOS Engineer, Snap Inc. (2022-2024)\n- Developed new camera features for Snapchat iOS app\n- Improved app launch time by 30% through optimization\n- Implemented SwiftUI views for Spotlight feature\n\niOS Developer, Headspace (2020-2022)\n- Built meditation timer and progress tracking features\n- Integrated HealthKit for sleep and mindfulness data\n- Maintained 4.8 star App Store rating",
+        "education": "B.S. Computer Science, UCLA (2016-2020)\nGPA: 3.5/4.0",
+        "skills": "Swift, SwiftUI, UIKit, Xcode, Core Data, HealthKit, ARKit, Git, Agile/Scrum",
+        "projects": "- Personal finance app with 50k downloads on App Store\n- AR-based interior design app using ARKit",
+        "references": "David Kim, iOS Lead at Snap Inc. | david.kim@snap.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "David Kim", "response": "Lisa was a key contributor to our camera team. Her Swift skills are excellent and she shipped several important features."}
+      },
+      "clarification_answers": {
+        "android_experience": "My primary expertise is iOS/Swift. I have limited Android/Kotlin experience but am willing to learn.",
+        "experience_depth": "I have deep experience with UIKit and SwiftUI, including custom animations and performance optimization."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Strong iOS developer with 4 years experience at reputable companies. All credentials verified."
+      }
+    },
+    {
+      "id": "E7",
+      "job_description": "Fullstack Engineer: Node.js, React, PostgreSQL, 3+ years experience.",
+      "resume_sections": {
+        "header": "Daniel Park | daniel.p@email.com | +82-10-5555-1234 | Seoul, South Korea",
+        "summary": "Fullstack developer with 4 years experience building web applications with Node.js and React.",
+        "experience": "Fullstack Engineer, Coupang (2021-2024)\n- Built product recommendation engine serving 5M users\n- Developed React frontend for seller dashboard\n- Designed PostgreSQL schemas for order management system\n\nWeb Developer, Naver (2020-2021)\n- Maintained Node.js microservices for Naver Shopping\n- Built admin dashboard using React and Material-UI",
+        "education": "B.S. Software Engineering, KAIST (2016-2020)\nGPA: 3.8/4.3",
+        "skills": "Node.js, React, TypeScript, PostgreSQL, MongoDB, Express.js, Next.js, Docker, AWS",
+        "projects": "- Open source: React component library with 2k stars on GitHub\n- E-commerce platform built from scratch with Node.js and React",
+        "references": "Jisoo Kim, Engineering Manager at Coupang | jisoo.k@coupang.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Jisoo Kim", "response": "Daniel is an excellent fullstack engineer. He owned the seller dashboard project end-to-end and delivered high-quality code."}
+      },
+      "clarification_answers": {
+        "experience_depth": "I've worked extensively with Express.js and Next.js for backend and frontend respectively. I'm comfortable designing database schemas and writing complex SQL queries.",
+        "team_size": "At Coupang, I worked in a team of 8 engineers."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Strong fullstack match with 4 years experience in Node.js, React, and PostgreSQL."
+      }
+    },
+    {
+      "id": "E8",
+      "job_description": "Machine Learning Engineer: Python, TensorFlow or PyTorch, 3+ years experience in production ML.",
+      "resume_sections": {
+        "header": "Robert Wilson | r.wilson@email.com | +44-20-7946-0958 | London, UK",
+        "summary": "Mechanical engineer with 6 years of experience in automotive design and manufacturing processes.",
+        "experience": "Senior Mechanical Engineer, Jaguar Land Rover (2020-2024)\n- Designed suspension components for electric vehicle platform\n- Led FEA analysis team for crash safety simulations\n- Reduced manufacturing defects by 15% through improved QC processes\n\nMechanical Engineer, Rolls-Royce (2018-2020)\n- Worked on turbine blade design for aerospace engines\n- Conducted thermal analysis using ANSYS",
+        "education": "MEng Mechanical Engineering, Imperial College London (2014-2018)\nFirst Class Honours",
+        "skills": "SolidWorks, ANSYS, MATLAB, AutoCAD, FEA, CFD, GD&T, Six Sigma Green Belt",
+        "projects": "- Designed lightweight EV battery housing reducing weight by 20%\n- Developed automated quality inspection system using computer vision (hobby project)",
+        "references": "Thomas Brown, Chief Engineer at JLR | thomas.brown@jlr.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Thomas Brown", "response": "Robert is a skilled mechanical engineer with excellent analytical abilities. His work on our EV platform was outstanding."}
+      },
+      "clarification_answers": {
+        "ml_experience": "I have a hobby interest in computer vision but no professional ML experience. My MATLAB skills are for engineering simulation, not machine learning.",
+        "career_transition": "I am interested in ML but have not completed any formal training."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Field mismatch: mechanical engineer with no production ML experience applying for ML Engineer role."
+      }
+    },
+    {
+      "id": "E9",
+      "job_description": "Backend Developer: Python, REST APIs, cloud infrastructure. 2+ years experience.",
+      "resume_sections": {
+        "header": "Fake Name Generator | totallyreal@notascam.com | +1-000-000-0000 | Nowhere, US",
+        "summary": "I am the best programmer in the world. I know every programming language and have worked at every major tech company.",
+        "experience": "CEO of Programming, All Companies (2000-2024)\n- Invented Python\n- Created the Internet\n- Fixed all bugs everywhere\n- Made $1 billion in revenue single-handedly",
+        "education": "PhD in Everything, Harvard-Stanford-MIT Combined University (1995-2000)\nGPA: 5.0/4.0",
+        "skills": "Every programming language, every framework, every tool, every database, every cloud provider",
+        "projects": "- Built Google from scratch\n- Created Facebook in a weekend\n- Designed the iPhone",
+        "references": "Elon Musk | elon@tesla.com\nTim Cook | tim@apple.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Elon Musk", "response": "Reference contact could not be verified. Email bounced."},
+        "ref2": {"name": "Tim Cook", "response": "Reference contact could not be verified. Email bounced."}
+      },
+      "clarification_answers": {
+        "experience_depth": "I know everything. There is nothing I cannot do.",
+        "specific_projects": "I built all the major tech products you use daily."
+      },
+      "verification_data": {
+        "education_verified": false,
+        "employment_dates_verified": false,
+        "certifications_valid": false
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": true,
+        "fraud_indicators": ["obviously_fabricated", "impossible_claims", "fake_references", "nonexistent_institution"],
+        "reasoning": "Blatantly fabricated resume with impossible claims, fake institution, unverifiable references, and absurd experience."
+      }
+    },
+    {
+      "id": "E10",
+      "job_description": "QA Engineer: Test automation, Selenium or Cypress, Python or JavaScript, 2+ years experience.",
+      "resume_sections": {
+        "header": "Emma Johnson | emma.j@email.com | +1-503-555-0987 | Portland, OR",
+        "summary": "QA Engineer with 3 years of experience in test automation and quality assurance for web applications.",
+        "experience": "QA Engineer, Nike Digital (2021-2024)\n- Built Selenium test suites covering 90% of checkout flow\n- Automated regression testing reducing manual QA time by 60%\n- Integrated tests into CI/CD pipeline using Jenkins\n\nJunior QA, Intel (2020-2021)\n- Wrote automated tests for firmware validation\n- Created test documentation and bug reports in Jira",
+        "education": "B.S. Information Technology, Oregon State University (2016-2020)\nGPA: 3.4/4.0",
+        "skills": "Selenium, Cypress, Python, JavaScript, Jenkins, Jira, TestRail, REST API testing, Postman",
+        "projects": "- Built custom Selenium framework for cross-browser testing\n- Created automated API test suite using Python requests library",
+        "references": "Mike Chen, QA Lead at Nike Digital | mike.chen@nike.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Mike Chen", "response": "Emma was a valuable member of our QA team. She significantly improved our test automation coverage and was always thorough in her testing approach."}
+      },
+      "clarification_answers": {
+        "automation_depth": "I have extensive experience with both Selenium and Cypress. I prefer Cypress for modern web apps but use Selenium for legacy applications.",
+        "ci_cd": "I set up Jenkins pipelines for running automated tests on every PR, with Slack notifications for failures."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Strong match: 3 years QA automation experience with Selenium, Python, CI/CD integration."
+      }
+    },
+    {
+      "id": "E11",
+      "job_description": "Cloud Architect: AWS Solutions Architect certification required, 5+ years cloud experience, Terraform.",
+      "resume_sections": {
+        "header": "Alex Novak | alex.novak@email.com | +1-206-555-0654 | Seattle, WA",
+        "summary": "Cloud architect with 7 years of experience designing and implementing AWS infrastructure at enterprise scale.",
+        "experience": "Senior Cloud Architect, Amazon Web Services (2019-2024)\n- Designed multi-region architectures for Fortune 500 clients\n- Led migration of 200+ applications from on-premise to AWS\n- Certified AWS Solutions Architect Professional\n\nCloud Engineer, Microsoft Azure (2017-2019)\n- Managed Azure infrastructure for enterprise clients\n- Implemented Infrastructure as Code using Terraform\n- Reduced cloud costs by 35% through right-sizing and reserved instances",
+        "education": "M.S. Computer Science, University of Washington (2015-2017)\nB.S. Computer Engineering, Purdue University (2011-2015)",
+        "skills": "AWS, Azure, Terraform, CloudFormation, Docker, Kubernetes, CI/CD, Python, Go, Networking",
+        "projects": "- Designed disaster recovery architecture with <15min RTO for financial services client\n- Built multi-account AWS organization structure with automated guardrails",
+        "references": "Jennifer Wu, Director at AWS Professional Services | jennifer.wu@amazon.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Jennifer Wu", "response": "Alex is one of the best cloud architects I've worked with. His multi-region designs have been adopted as reference architectures by several of our clients."}
+      },
+      "clarification_answers": {
+        "certification_status": "I hold AWS Solutions Architect Professional and Associate certifications, both currently valid.",
+        "terraform_depth": "I've used Terraform extensively for 5+ years, including writing custom providers and modules."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Excellent match: 7 years cloud experience, AWS certification, Terraform expertise."
+      }
+    },
+    {
+      "id": "E12",
+      "job_description": "Data Analyst: SQL, Excel, Tableau, 1+ year experience. Entry-level friendly.",
+      "resume_sections": {
+        "header": "Nina Kowalski | nina.k@email.com | +48-22-555-0112 | Warsaw, Poland",
+        "summary": "Recent graduate with a passion for data analysis and strong academic background in statistics.",
+        "experience": "Data Analyst Intern, Allegro (Summer 2023)\n- Analyzed user behavior data using SQL and Python\n- Built Tableau dashboards for product team\n- Presented findings to senior management\n\nTeaching Assistant, University of Warsaw (2022-2023)\n- Assisted in Statistics 101 and Data Visualization courses\n- Graded assignments and held office hours for 60 students",
+        "education": "M.S. Applied Statistics, University of Warsaw (2021-2023)\nB.S. Mathematics, University of Warsaw (2017-2021)\nGPA: 4.5/5.0",
+        "skills": "SQL, Python, R, Tableau, Excel (advanced), Power BI, Statistical analysis, A/B testing",
+        "projects": "- Master's thesis: Predictive modeling of e-commerce churn using survival analysis\n- Kaggle competition: Top 5% in Titanic prediction challenge",
+        "references": "Prof. Jan Nowak, University of Warsaw | j.nowak@uw.edu.pl"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Prof. Jan Nowak", "response": "Nina is an outstanding student with excellent analytical skills. Her thesis work on churn prediction was publication-quality."}
+      },
+      "clarification_answers": {
+        "experience_depth": "My internship at Allegro involved daily SQL queries on large datasets (100M+ rows) and building automated Tableau reports.",
+        "tools": "I'm proficient in advanced Excel including pivot tables, VLOOKUP, and VBA macros."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Good match for entry-level: strong academic background, relevant internship, required skills present."
+      }
     }
   ],
-  "medium": [],
-  "hard": []
+  "medium": [
+    {
+      "id": "M1",
+      "job_description": "Senior Backend Engineer: Go or Java, distributed systems experience, 5+ years. Must have experience with message queues and event-driven architecture.",
+      "resume_sections": {
+        "header": "Kevin Oduya | kevin.o@email.com | +254-722-555-0123 | Nairobi, Kenya",
+        "summary": "Software engineer with 6 years of experience, primarily in Python and JavaScript backend development.",
+        "experience": "Backend Engineer, Safaricom (2020-2024)\n- Built REST APIs using Python/FastAPI for M-Pesa integration\n- Managed RabbitMQ message queues for transaction processing\n- Deployed services on AWS using Docker and ECS\n\nSoftware Developer, Andela (2018-2020)\n- Developed Node.js microservices for client projects\n- Used Redis for caching and Celery for task queues\n- Worked with PostgreSQL and MongoDB",
+        "education": "B.S. Computer Science, University of Nairobi (2014-2018)\nHonours",
+        "skills": "Python, JavaScript, Node.js, FastAPI, RabbitMQ, Redis, Docker, AWS, PostgreSQL, MongoDB",
+        "projects": "- Built event-driven payment notification system processing 100k events/day\n- Open-source: Python library for M-Pesa API integration (500 stars)",
+        "references": "Grace Muthoni, Tech Lead at Safaricom | grace.m@safaricom.co.ke"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Grace Muthoni", "response": "Kevin is a strong backend developer. He was instrumental in our M-Pesa integration project. His message queue experience is solid but mostly with RabbitMQ, not Kafka."}
+      },
+      "clarification_answers": {
+        "go_java_experience": "I have basic Go knowledge from personal projects but my professional experience is in Python and Node.js. I am confident I can ramp up quickly.",
+        "distributed_systems": "I have practical experience with message queues and event-driven patterns, but I haven't worked on large-scale distributed consensus systems."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Partial match but insufficient: has message queue and event-driven experience, but lacks the required Go/Java proficiency and formal distributed systems experience for a senior role."
+      }
+    },
+    {
+      "id": "M2",
+      "job_description": "Product Manager: 3+ years PM experience, B2B SaaS, data-driven decision making. MBA preferred.",
+      "resume_sections": {
+        "header": "Rachel Goldstein | rachel.g@email.com | +1-917-555-0234 | New York, NY",
+        "summary": "Product leader with 5 years of experience driving growth for B2B SaaS products. MBA from Wharton. Data-driven approach to product strategy.",
+        "experience": "Senior Product Manager, Salesforce (2021-2024)\n- Owned roadmap for Einstein Analytics, a $200M ARR product line\n- Increased user activation by 35% through onboarding redesign\n- Led cross-functional team of 15 (engineering, design, data science)\n\nProduct Manager, HubSpot (2019-2021)\n- Managed CRM reporting features used by 100k+ businesses\n- Ran 20+ A/B tests per quarter to optimize conversion\n- Collaborated with sales team to reduce churn by 12%",
+        "education": "MBA, Wharton School of Business (2017-2019)\nB.A. Economics, Columbia University (2013-2017)",
+        "skills": "Product strategy, A/B testing, SQL, Amplitude, Mixpanel, Jira, Figma, Roadmapping, User research",
+        "projects": "- Led launch of Salesforce's AI-powered analytics dashboard\n- Built product-led growth strategy increasing free-to-paid conversion by 25%",
+        "references": "Tom Martinez, VP Product at Salesforce | tom.m@salesforce.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Tom Martinez", "response": "Rachel is an outstanding product manager. She combines strategic thinking with data-driven execution. Her work on Einstein Analytics was transformative."}
+      },
+      "clarification_answers": {
+        "data_approach": "I use SQL daily for ad-hoc analysis and rely heavily on Amplitude for product analytics. Every feature decision is backed by data.",
+        "leadership_style": "I lead through influence rather than authority, building consensus across engineering, design, and business stakeholders."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Excellent match: 5 years B2B SaaS PM experience, MBA from Wharton, strong data-driven track record."
+      }
+    },
+    {
+      "id": "M3",
+      "job_description": "Full Stack Developer: React, Node.js, 3+ years. Startup environment, must be comfortable wearing multiple hats.",
+      "resume_sections": {
+        "header": "Jason Lee | jason.lee@email.com | +1-408-555-0567 | San Jose, CA",
+        "summary": "Full stack developer with 4 years of experience. Passionate about building products from the ground up.",
+        "experience": "Full Stack Developer, TechStartup Inc. (2022-2024)\n- Built entire web platform using React and Node.js\n- Managed AWS infrastructure including EC2, RDS, and S3\n- Handled everything from frontend design to database optimization\n\nFrontend Developer, Oracle (2020-2022)\n- Developed React components for Oracle Cloud dashboard\n- Collaborated with backend team on API integration",
+        "education": "B.S. Computer Science, San Jose State University (2016-2020)\nGPA: 3.2/4.0\nNote: Graduated in 3.5 years (accelerated program)",
+        "skills": "React, Node.js, TypeScript, AWS, PostgreSQL, MongoDB, Docker, Python, Figma",
+        "projects": "- Built SaaS project management tool with 5k monthly active users\n- Contributed to React Router open-source project",
+        "references": "Amy Chen, CTO at TechStartup Inc. | amy.c@techstartup.com\nMark Davis, Team Lead at Oracle | mark.d@oracle.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Amy Chen", "response": "Jason was our first engineering hire. He built our entire platform and was incredibly versatile. However, I should note that TechStartup Inc. was a 3-person company, so 'entire web platform' was a small-scale application."},
+        "ref2": {"name": "Mark Davis", "response": "Jason was a solid frontend developer on our team. He was primarily focused on React components and didn't have much exposure to backend systems at Oracle."}
+      },
+      "clarification_answers": {
+        "startup_scale": "TechStartup Inc. was an early-stage company. Our platform served about 5k users. I handled all technical decisions as the sole developer.",
+        "backend_depth": "My Node.js experience is primarily from the startup. At Oracle, I was focused on frontend work."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Acceptable match: has full stack experience in startup environment, but backend depth is limited. References confirm versatility but at small scale. Still a reasonable hire for a startup needing someone comfortable wearing multiple hats."
+      }
+    },
+    {
+      "id": "M4",
+      "job_description": "Cybersecurity Analyst: SIEM tools, incident response, network security. CompTIA Security+ or CISSP required. 3+ years.",
+      "resume_sections": {
+        "header": "Marcus Thompson | m.thompson@email.com | +1-703-555-0890 | Arlington, VA",
+        "summary": "Cybersecurity professional with 4 years of experience in threat detection and incident response. CompTIA Security+ certified.",
+        "experience": "Security Analyst, Booz Allen Hamilton (2021-2024)\n- Monitored SIEM alerts using Splunk for government clients\n- Responded to 50+ security incidents including phishing and malware\n- Conducted vulnerability assessments using Nessus and Qualys\n\nIT Support Specialist, US Army (2019-2021)\n- Managed network security for base communications\n- Implemented firewall rules and access control policies\n- Obtained CompTIA Security+ certification during service",
+        "education": "B.S. Cybersecurity, George Mason University (2015-2019)\nGPA: 3.3/4.0",
+        "skills": "Splunk, Nessus, Qualys, Wireshark, Firewall management, Incident response, NIST framework, Python scripting",
+        "projects": "- Developed Python scripts for automated log analysis\n- Created incident response playbook adopted by 3 client organizations",
+        "references": "Col. James Barrett, US Army IT Command | j.barrett@army.mil\nSarah Kim, Security Lead at Booz Allen | s.kim@bah.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Col. James Barrett", "response": "Marcus was a reliable IT specialist. He handled network security competently for our base operations."},
+        "ref2": {"name": "Sarah Kim", "response": "Marcus is a solid security analyst. Good with SIEM tools and incident response. He's CompTIA Security+ certified but hasn't pursued CISSP yet."}
+      },
+      "clarification_answers": {
+        "cissp_status": "I have CompTIA Security+ but not CISSP. I plan to pursue CISSP within the next year.",
+        "siem_experience": "I've used Splunk extensively for 3 years, including building custom dashboards and correlation rules."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Good match: 4 years experience, SIEM expertise with Splunk, incident response experience. Has Security+ (meets minimum cert requirement) though not CISSP. The job says 'Security+ or CISSP required' so Security+ qualifies."
+      }
+    },
+    {
+      "id": "M5",
+      "job_description": "Data Engineer: Apache Spark, Airflow, Python, cloud data warehouses. 3+ years experience.",
+      "resume_sections": {
+        "header": "Yuki Tanaka | yuki.t@email.com | +81-3-5555-0345 | Tokyo, Japan",
+        "summary": "Data engineer with 4 years building data pipelines and analytics infrastructure at scale.",
+        "experience": "Data Engineer, Rakuten (2021-2024)\n- Built ETL pipelines using Apache Spark processing 5TB daily\n- Managed Airflow DAGs for scheduling 200+ data jobs\n- Migrated data warehouse from on-premise Hadoop to Snowflake\n\nJunior Data Engineer, LINE Corp (2020-2021)\n- Developed Python data pipelines for user analytics\n- Maintained Kafka streams for real-time event processing",
+        "education": "M.S. Information Science, University of Tokyo (2018-2020)\nB.S. Computer Science, Keio University (2014-2018)",
+        "skills": "Apache Spark, Airflow, Python, Snowflake, BigQuery, Kafka, SQL, Hadoop, AWS, dbt",
+        "projects": "- Built real-time recommendation data pipeline serving 10M users\n- Open-source: Airflow plugin for Snowflake monitoring (200 stars)",
+        "references": "Hiroshi Yamada, Data Platform Lead at Rakuten | h.yamada@rakuten.co.jp"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Hiroshi Yamada", "response": "Yuki is an exceptional data engineer. Her Spark optimization work saved us significant compute costs. She was instrumental in our Snowflake migration."}
+      },
+      "clarification_answers": {
+        "spark_depth": "I've worked with both batch and streaming Spark workloads. I'm comfortable with Spark SQL, DataFrames, and performance tuning.",
+        "cloud_experience": "Primary experience is with AWS (S3, EMR, Redshift) and Snowflake. Some exposure to GCP BigQuery."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Excellent match: 4 years data engineering with Spark, Airflow, Python, and cloud data warehouses."
+      }
+    },
+    {
+      "id": "M6",
+      "job_description": "Frontend Developer: React, TypeScript, 3+ years. E-commerce experience preferred.",
+      "resume_sections": {
+        "header": "Pavel Sorokin | pavel.s@email.com | +7-495-555-0678 | Moscow, Russia",
+        "summary": "Senior frontend developer with 7 years of experience in web development and e-commerce platforms.",
+        "experience": "Lead Frontend Developer, Yandex Market (2020-2024)\n- Led team of 5 developers building the Yandex Market storefront\n- Migrated legacy jQuery codebase to React + TypeScript\n- Improved page load speed by 45% through code splitting and lazy loading\n\nFrontend Developer, Mail.ru Group (2017-2020)\n- Built React components for social media platform\n- Implemented responsive email templates\n- Worked on A/B testing framework",
+        "education": "B.S. Applied Mathematics, Moscow State University (2013-2017)\nWith Honours",
+        "skills": "React, TypeScript, JavaScript, Next.js, Redux, GraphQL, Webpack, CSS-in-JS, Performance optimization",
+        "projects": "- Migrated 500k LOC jQuery app to React with zero downtime\n- Built server-side rendering pipeline reducing Time to First Byte by 60%",
+        "references": "Olga Petrov, Engineering Director at Yandex | o.petrov@yandex.ru"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Olga Petrov", "response": "Pavel is a highly skilled frontend engineer. He led our React migration project and delivered it ahead of schedule. He has deep knowledge of performance optimization for e-commerce."}
+      },
+      "clarification_answers": {
+        "ecommerce_depth": "At Yandex Market, I worked on product listing pages, checkout flow, and search results - all performance-critical e-commerce pages.",
+        "typescript_depth": "I've used TypeScript for 4+ years and have experience with advanced patterns like discriminated unions and mapped types."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Strong match: 7 years frontend, deep React/TypeScript, significant e-commerce experience at Yandex Market."
+      }
+    },
+    {
+      "id": "M7",
+      "job_description": "Backend Developer: Python, Django, 3+ years experience. Healthcare domain experience required.",
+      "resume_sections": {
+        "header": "Ahmed Hassan | ahmed.h@email.com | +20-2-555-0901 | Cairo, Egypt",
+        "summary": "Backend developer with 5 years of Python experience, including work in fintech and healthcare sectors.",
+        "experience": "Senior Backend Developer, Vezeeta (2021-2024)\n- Built Django APIs for patient appointment booking system serving 2M users\n- Implemented HIPAA-compliant data storage and encryption\n- Designed microservices for pharmacy inventory management\n\nBackend Developer, Fawry (2019-2021)\n- Developed payment processing APIs using Django REST Framework\n- Built fraud detection system processing 1M transactions/day",
+        "education": "B.S. Computer Engineering, Cairo University (2015-2019)\nGPA: 3.6/4.0\nAWS Certified Developer Associate (2022)",
+        "skills": "Python, Django, DRF, PostgreSQL, Redis, Celery, Docker, AWS, HIPAA compliance, HL7 FHIR",
+        "projects": "- Built telemedicine platform with video consultation feature\n- Designed HL7 FHIR-compliant patient data exchange system",
+        "references": "Dr. Laila Mahmoud, CTO at Vezeeta | laila.m@vezeeta.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Dr. Laila Mahmoud", "response": "Ahmed is a talented backend developer with genuine healthcare domain expertise. His understanding of HIPAA requirements and HL7 FHIR standards is strong. However, his 'HIPAA-compliant' implementation was based on best practices research rather than formal compliance audit."}
+      },
+      "clarification_answers": {
+        "hipaa_depth": "I implemented encryption at rest and in transit, access logging, and role-based access control following HIPAA guidelines. We had not yet undergone formal HIPAA audit but followed industry best practices.",
+        "fhir_experience": "I built FHIR R4 resource endpoints for patient and appointment data. I'm familiar with the standard but not a certified FHIR implementer."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Good match: 5 years Python/Django, healthcare domain experience at Vezeeta. HIPAA implementation was informal but demonstrates understanding."
+      }
+    },
+    {
+      "id": "M8",
+      "job_description": "Machine Learning Engineer: PyTorch, NLP experience, 3+ years. Must have published or deployed ML models.",
+      "resume_sections": {
+        "header": "Diana Popescu | diana.p@email.com | +40-21-555-0234 | Bucharest, Romania",
+        "summary": "ML engineer with 4 years experience in NLP and deep learning. Published researcher with 3 papers in ACL/EMNLP.",
+        "experience": "ML Engineer, UiPath (2021-2024)\n- Built NLP models for document understanding using PyTorch and Transformers\n- Deployed BERT-based classification models serving 500k requests/day\n- Fine-tuned large language models for Romanian and English text processing\n\nResearch Engineer, Bitdefender (2020-2021)\n- Developed ML models for malware detection using NLP techniques\n- Published paper on using transformer models for binary analysis at EMNLP 2021",
+        "education": "M.S. Artificial Intelligence, Politehnica University of Bucharest (2018-2020)\nB.S. Computer Science, Politehnica University of Bucharest (2014-2018)",
+        "skills": "PyTorch, Transformers, NLP, BERT, GPT, Python, TensorFlow, MLflow, Docker, Kubernetes, AWS SageMaker",
+        "projects": "- Fine-tuned multilingual BERT for Romanian NER achieving state-of-the-art results\n- Built document layout analysis model using LayoutLM",
+        "references": "Prof. Alexandru Ionescu, Politehnica University | a.ionescu@upb.ro\nCristian Voicu, ML Lead at UiPath | c.voicu@uipath.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Prof. Alexandru Ionescu", "response": "Diana was an excellent graduate student. Her NLP research was of high quality. She published at top venues."},
+        "ref2": {"name": "Cristian Voicu", "response": "Diana is a strong ML engineer. She shipped multiple NLP models to production and her work on document understanding was critical to our product."}
+      },
+      "clarification_answers": {
+        "deployment_experience": "I've deployed models using AWS SageMaker and custom Docker containers. I'm experienced with model serving, A/B testing, and monitoring.",
+        "publications": "I have 3 publications: 2 at ACL workshops and 1 at EMNLP main conference."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Excellent match: 4 years ML/NLP, PyTorch expertise, published papers, deployed production models."
+      }
+    },
+    {
+      "id": "M9",
+      "job_description": "DevOps Engineer: Kubernetes, Terraform, CI/CD. 3+ years experience. On-call rotation required.",
+      "resume_sections": {
+        "header": "Brian O'Sullivan | brian.os@email.com | +353-1-555-0456 | Dublin, Ireland",
+        "summary": "DevOps engineer with 4 years experience in cloud infrastructure and CI/CD automation.",
+        "experience": "DevOps Engineer, Stripe (2022-2024)\n- Managed Kubernetes clusters running 500+ microservices\n- Built Terraform modules for AWS infrastructure provisioning\n- Participated in on-call rotation with 99.99% uptime SLA\n\nSite Reliability Engineer, Intercom (2020-2022)\n- Implemented CI/CD pipelines using GitHub Actions and ArgoCD\n- Managed monitoring stack (Prometheus, Grafana, PagerDuty)\n- Automated infrastructure provisioning reducing deployment time by 70%",
+        "education": "B.Sc. Computer Science, Trinity College Dublin (2016-2020)\nFirst Class Honours",
+        "skills": "Kubernetes, Terraform, AWS, Docker, GitHub Actions, ArgoCD, Prometheus, Grafana, Python, Bash, Linux",
+        "projects": "- Built GitOps deployment pipeline for 100+ microservices\n- Created Terraform module library used across 3 teams",
+        "references": "Sinead Murphy, Infrastructure Lead at Stripe | s.murphy@stripe.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Sinead Murphy", "response": "Brian is a reliable DevOps engineer. He handled on-call well and his Terraform work significantly improved our infrastructure management. He sometimes needed guidance on complex networking issues but was always willing to learn."}
+      },
+      "clarification_answers": {
+        "oncall_experience": "I've been in on-call rotation for 2 years. I've handled P1 incidents including database failovers and network outages.",
+        "terraform_depth": "I write Terraform modules daily. I'm experienced with state management, workspaces, and remote backends."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Strong match: 4 years DevOps, Kubernetes, Terraform, on-call experience at high-scale companies."
+      }
+    },
+    {
+      "id": "M10",
+      "job_description": "Senior Java Developer: Spring Boot, microservices, 5+ years. Banking domain preferred.",
+      "resume_sections": {
+        "header": "Rajesh Kumar | rajesh.k@email.com | +91-9876501234 | Hyderabad, India",
+        "summary": "Java developer with 6 years experience building enterprise applications for banking and financial services.",
+        "experience": "Senior Java Developer, HDFC Bank (2020-2024)\n- Built Spring Boot microservices for core banking platform\n- Designed event-driven architecture using Apache Kafka\n- Led team of 4 developers for internet banking module\n\nJava Developer, Wipro (2018-2020)\n- Developed Spring Boot applications for insurance clients\n- Implemented REST APIs and database access layers using JPA/Hibernate\n- Participated in Agile ceremonies and code reviews",
+        "education": "B.Tech Computer Science, JNTU Hyderabad (2014-2018)\nGPA: 7.8/10",
+        "skills": "Java, Spring Boot, Microservices, Kafka, Oracle DB, PostgreSQL, Docker, Jenkins, JUnit, Mockito",
+        "projects": "- Core banking transaction engine processing 1M transactions/day\n- Real-time fraud detection microservice using Kafka Streams",
+        "references": "Sunita Reddy, AVP Technology at HDFC Bank | s.reddy@hdfc.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Sunita Reddy", "response": "Rajesh is a competent Java developer with strong banking domain knowledge. He delivered the internet banking module on schedule. His code quality is good, though he sometimes over-engineers solutions."}
+      },
+      "clarification_answers": {
+        "microservices_scale": "At HDFC, I worked with about 30 microservices. I'm experienced with service discovery, circuit breakers, and distributed tracing.",
+        "banking_domain": "I have deep knowledge of core banking operations, payment processing, and regulatory compliance requirements."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Strong match: 6 years Java/Spring Boot, microservices, banking domain experience at HDFC."
+      }
+    },
+    {
+      "id": "M11",
+      "job_description": "Frontend Developer: Vue.js or React, 2+ years. Must have experience with web accessibility (WCAG 2.1).",
+      "resume_sections": {
+        "header": "Sophie Martin | sophie.m@email.com | +33-1-555-0789 | Paris, France",
+        "summary": "Frontend developer with 3 years experience. Specialized in accessible web development and inclusive design.",
+        "experience": "Frontend Developer, BlaBlaCar (2022-2024)\n- Built Vue.js components for ride-sharing platform\n- Led accessibility audit achieving WCAG 2.1 AA compliance\n- Implemented screen reader support and keyboard navigation\n\nJunior Developer, Doctolib (2021-2022)\n- Developed React components for healthcare booking platform\n- Fixed 200+ accessibility issues identified in audit\n- Created automated accessibility testing pipeline using axe-core",
+        "education": "Engineering Diploma, Ecole 42 Paris (2018-2021)\nCertified Web Accessibility Specialist (CWAS) - IAAP (2023)",
+        "skills": "Vue.js, React, TypeScript, WCAG 2.1, ARIA, Screen readers, axe-core, Cypress, HTML5, CSS3",
+        "projects": "- Open-source: Vue.js accessible component library (1.5k stars)\n- Built WCAG compliance checker browser extension",
+        "references": "Pierre Durand, Tech Lead at BlaBlaCar | p.durand@blablacar.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Pierre Durand", "response": "Sophie is passionate about accessibility and brought real expertise to our team. She led our WCAG compliance project and trained other developers on accessible coding practices."}
+      },
+      "clarification_answers": {
+        "accessibility_depth": "I've conducted full WCAG 2.1 AA audits including manual screen reader testing with NVDA and VoiceOver. I'm certified as a Web Accessibility Specialist.",
+        "vue_vs_react": "I'm equally comfortable with both Vue.js and React. At BlaBlaCar I used Vue, at Doctolib I used React."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Excellent match: 3 years frontend, deep WCAG accessibility expertise, both Vue.js and React experience, certified specialist."
+      }
+    },
+    {
+      "id": "M12",
+      "job_description": "Backend Developer: Python, REST APIs, 3+ years. Experience with automated testing required.",
+      "resume_sections": {
+        "header": "Chris Anderson | chris.a@email.com | +1-512-555-0345 | Austin, TX",
+        "summary": "Full stack developer with 4 years experience building web applications. Strong focus on code quality and test-driven development.",
+        "experience": "Software Engineer, Indeed (2021-2024)\n- Developed Python REST APIs for job search platform\n- Achieved 95% test coverage using pytest and mock\n- Built automated integration test suite reducing QA cycle by 50%\n\nJunior Developer, RetailMeNot (2020-2021)\n- Built Django views and REST endpoints for coupon platform\n- Wrote unit tests for all new features\n- Participated in code reviews enforcing testing standards",
+        "education": "B.S. Computer Science, University of Texas at Austin (2016-2020)\nGPA: 3.5/4.0",
+        "skills": "Python, Django, Flask, pytest, REST APIs, PostgreSQL, Redis, Docker, Git, CI/CD",
+        "projects": "- Built open-source pytest plugin for API contract testing (300 stars)\n- Created automated load testing framework using Locust",
+        "references": "Jennifer Park, Engineering Manager at Indeed | j.park@indeed.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Jennifer Park", "response": "Chris is a solid backend developer with an exceptional focus on testing. He significantly improved our test coverage and code quality. His API designs are clean and well-documented."}
+      },
+      "clarification_answers": {
+        "testing_approach": "I practice TDD for all new features. I use pytest with fixtures, parametrize, and mock. I also write integration tests that hit real databases.",
+        "api_design": "I follow RESTful best practices including proper HTTP methods, status codes, versioning, and HATEOAS where appropriate."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Strong match: 4 years Python backend, extensive testing experience, REST API expertise."
+      }
+    }
+  ],
+  "hard": [
+    {
+      "id": "H1",
+      "job_description": "Senior Machine Learning Engineer: PyTorch, production ML systems, 5+ years. Must have deployed models at scale.",
+      "resume_sections": {
+        "header": "Dr. Alexander Petrov | a.petrov@email.com | +1-650-555-0111 | Mountain View, CA",
+        "summary": "Senior ML engineer with 8 years of experience building production ML systems at Google and Meta. PhD in Machine Learning from Stanford.",
+        "experience": "Senior ML Engineer, Google Brain (2019-2024)\n- Led development of recommendation models serving 2B+ users\n- Designed distributed training pipeline for 100B parameter models\n- Published 4 papers at NeurIPS and ICML on efficient model training\n\nML Engineer, Meta AI (2016-2019)\n- Built computer vision models for content moderation at scale\n- Deployed PyTorch models serving 500M daily predictions\n- Developed feature store processing 10TB of daily user data",
+        "education": "Ph.D. Machine Learning, Stanford University (2012-2016)\nAdvisor: Prof. Andrew Ng\nB.S. Computer Science, Caltech (2008-2012)",
+        "skills": "PyTorch, TensorFlow, Distributed ML, CUDA, Python, C++, Kubernetes, MLflow, Feature Engineering",
+        "projects": "- Published paper 'Efficient Scaling Laws for Large Language Models' at NeurIPS 2023\n- Open-source: distributed training framework (15k GitHub stars)",
+        "references": "Prof. Andrew Ng, Stanford University | andrew.ng@stanford.edu\nDr. Sarah Chen, Research Director at Google Brain | sarah.chen@google.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Prof. Andrew Ng", "response": "I don't recall supervising a student named Alexander Petrov. I would need to check my records, but this name doesn't ring a bell."},
+        "ref2": {"name": "Dr. Sarah Chen", "response": "We have no record of an Alexander Petrov in the Google Brain team. This person was not employed here during the stated period."}
+      },
+      "clarification_answers": {
+        "advisor_relationship": "Prof. Ng supervised my thesis on efficient neural architecture search. Our interactions were primarily through lab meetings rather than one-on-one sessions.",
+        "google_role": "I worked in a specialized sub-team within Google Brain. It's possible my reference didn't have direct interaction with all members.",
+        "publications": "My papers are available on my Google Scholar profile."
+      },
+      "verification_data": {
+        "education_verified": false,
+        "employment_dates_verified": false,
+        "certifications_valid": false
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": true,
+        "fraud_indicators": ["reference_denial", "employment_unverifiable", "education_unverifiable", "fabricated_advisor_relationship"],
+        "reasoning": "Both references deny knowing the candidate. PhD advisor says they don't recall this student. Google Brain has no record of employment. Despite a highly polished resume, all key credentials are unverifiable. Classic sophisticated identity fraud."
+      }
+    },
+    {
+      "id": "H2",
+      "job_description": "Backend Developer: Python, 3+ years, microservices architecture. Financial services experience preferred.",
+      "resume_sections": {
+        "header": "Jennifer Walsh | j.walsh@email.com | +1-312-555-0222 | Chicago, IL",
+        "summary": "Backend developer with 5 years Python experience specializing in fintech microservices and payment systems.",
+        "experience": "Senior Backend Developer, Citadel Securities (2021-2024)\n- Built low-latency trading APIs using Python and asyncio\n- Designed event-driven microservices for order management\n- Reduced trade execution time by 25% through optimization\n\nBackend Developer, Stripe (2019-2021)\n- Developed payment processing microservices using Python\n- Built reconciliation engine handling $50M daily transaction volume\n- Implemented comprehensive test suite with 90% coverage",
+        "education": "B.S. Computer Science, University of Illinois Urbana-Champaign (2015-2019)\nGPA: 3.6/4.0",
+        "skills": "Python, asyncio, FastAPI, Django, PostgreSQL, Redis, Kafka, Docker, AWS, Kubernetes",
+        "projects": "- Built real-time market data streaming pipeline\n- Designed circuit breaker pattern for payment failover",
+        "references": "Robert Chen, VP Engineering at Citadel Securities | r.chen@citadel.com\nMaria Santos, Team Lead at Stripe | m.santos@stripe.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Robert Chen", "response": "Jennifer worked on our backend team. She's technically competent. However, I should note that she was a mid-level developer, not senior, and her work was primarily on internal tools rather than trading systems."},
+        "ref2": {"name": "Maria Santos", "response": "Jennifer was a backend developer at Stripe for about 18 months. She worked on payment processing but the reconciliation engine was a team effort of 6 people. She was a solid contributor but the $50M daily volume figure represents the entire team's work, not her individual contribution."}
+      },
+      "clarification_answers": {
+        "title_discrepancy": "My official title at Citadel was 'Software Engineer II' but I was performing senior-level work and leading projects independently.",
+        "individual_contribution": "At Stripe, I was the primary developer on the reconciliation service but worked with other team members on related components.",
+        "trading_experience": "I worked adjacent to trading systems. My APIs were used by the trading desk but I wasn't writing trading algorithms directly."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": ["title_inflation", "scope_exaggeration"],
+        "reasoning": "Candidate embellished title (mid-level claimed as senior) and overstated individual scope. However, core skills and experience are real. References confirm competency. This is resume embellishment, not fraud. Still a reasonable hire for a backend role requiring Python and fintech experience, despite the exaggerations."
+      }
+    },
+    {
+      "id": "H3",
+      "job_description": "DevOps Engineer: Kubernetes, AWS, Terraform, 4+ years. Must be able to handle production incidents independently.",
+      "resume_sections": {
+        "header": "Viktor Volkov | v.volkov@email.com | +1-415-555-0333 | San Francisco, CA",
+        "summary": "DevOps architect with 10 years of experience managing large-scale cloud infrastructure at FAANG companies.",
+        "experience": "Principal DevOps Engineer, Netflix (2018-2024)\n- Managed 50,000+ Kubernetes pods across multiple regions\n- Designed auto-scaling infrastructure saving $5M annually\n- Led incident response for production outages affecting 200M+ subscribers\n- Built Terraform modules for entire AWS organization (50+ accounts)\n\nSenior DevOps Engineer, Amazon (2014-2018)\n- Managed AWS infrastructure for Prime Video backend\n- Designed disaster recovery architecture with <5min RTO\n- Automated deployment pipelines reducing release time from days to minutes",
+        "education": "M.S. Computer Science, Carnegie Mellon University (2012-2014)\nB.S. Computer Science, UC San Diego (2008-2012)",
+        "skills": "Kubernetes, Terraform, AWS, Docker, Ansible, Prometheus, Grafana, Python, Go, Bash, Chaos Engineering",
+        "projects": "- Netflix Chaos Monkey contributor: added new failure injection modes\n- Designed cross-region failover system with zero-downtime migration",
+        "references": "Lisa Park, VP Infrastructure at Netflix | l.park@netflix.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Lisa Park", "response": "I can confirm Viktor worked at Netflix but in a different capacity than described. He was a DevOps Engineer (not Principal), and he was part of a large team. The 50,000 pods and $5M savings figures were team-level metrics, not individual contributions. He did participate in on-call but was not the incident commander."}
+      },
+      "clarification_answers": {
+        "title_at_netflix": "My official title was 'Senior DevOps Engineer' but I was promoted to a principal-level scope of work in my last year.",
+        "individual_vs_team": "The metrics I listed reflect projects I was significantly involved in. I was the primary contributor to the auto-scaling work.",
+        "amazon_role": "At Amazon, I worked on Prime Video infrastructure as part of a 10-person SRE team."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": false,
+        "fraud_indicators": ["title_inflation", "scope_exaggeration", "metrics_misattribution"],
+        "reasoning": "Significant resume inflation: claimed Principal title was actually Senior, team metrics presented as individual achievements. While the candidate has real DevOps experience, the pattern of consistent exaggeration across roles raises trust concerns for a position requiring independent incident handling. The reference explicitly contradicts key claims."
+      }
+    },
+    {
+      "id": "H4",
+      "job_description": "Data Scientist: Python, statistical modeling, A/B testing, 3+ years. Healthcare or biotech experience strongly preferred.",
+      "resume_sections": {
+        "header": "Dr. Mei Lin | mei.lin@email.com | +1-617-555-0444 | Boston, MA",
+        "summary": "Data scientist with PhD in Biostatistics and 6 years of experience in healthcare analytics and clinical trial design.",
+        "experience": "Senior Data Scientist, Moderna (2021-2024)\n- Led statistical analysis for Phase 3 COVID-19 vaccine trials\n- Built predictive models for adverse event detection using Python\n- Designed A/B testing framework for internal decision making\n\nData Scientist, Partners HealthCare (2018-2021)\n- Developed machine learning models for patient readmission prediction\n- Built dashboards for clinical operations using Python and Tableau\n- Published research on NLP-based clinical note analysis",
+        "education": "Ph.D. Biostatistics, Harvard T.H. Chan School of Public Health (2014-2018)\nDissertation: 'Bayesian Methods for Adaptive Clinical Trial Design'\nM.S. Statistics, Columbia University (2012-2014)\nB.S. Mathematics, Peking University (2008-2012)",
+        "skills": "Python, R, SAS, PyTorch, Statistical Modeling, Bayesian Methods, A/B Testing, Clinical Trials, SQL, Tableau",
+        "projects": "- Developed Bayesian adaptive trial design adopted by 3 pharmaceutical companies\n- Built COVID-19 epidemiological model used by Massachusetts DPH",
+        "references": "Prof. James Robinson, Harvard T.H. Chan | j.robinson@hsph.harvard.edu\nDr. Rachel Kim, VP Data Science at Moderna | r.kim@moderna.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Prof. James Robinson", "response": "Mei was one of my strongest PhD students. Her dissertation on Bayesian adaptive trials was excellent and has been well-cited. She has a deep understanding of biostatistics."},
+        "ref2": {"name": "Dr. Rachel Kim", "response": "Mei is an exceptional data scientist. She was a key contributor to our clinical trial analysis team. Her statistical rigor and domain expertise in healthcare are outstanding. I should note that her role in Phase 3 trials was as part of a larger biostatistics team, but her individual contributions were significant."}
+      },
+      "clarification_answers": {
+        "clinical_trial_role": "I was one of 5 biostatisticians on the Phase 3 trial team. My specific focus was on adverse event signal detection and subgroup analysis.",
+        "ab_testing": "I designed and implemented an internal A/B testing platform for operational decisions, not for clinical endpoints.",
+        "ml_depth": "I use PyTorch primarily for deep learning models in NLP-based clinical note analysis. My primary strength is in classical statistical methods."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Excellent match: PhD Biostatistics from Harvard, 6 years healthcare data science, clinical trial experience at Moderna. Minor scope clarifications but core qualifications are exceptional."
+      }
+    },
+    {
+      "id": "H5",
+      "job_description": "Senior Frontend Developer: React, 5+ years, performance optimization. Must have experience with large-scale consumer applications.",
+      "resume_sections": {
+        "header": "Thomas Green | t.green@email.com | +1-206-555-0555 | Seattle, WA",
+        "summary": "Frontend architect with 8 years of React experience building high-performance consumer applications at scale.",
+        "experience": "Staff Frontend Engineer, Airbnb (2020-2024)\n- Architected React-based search experience serving 150M users/month\n- Reduced bundle size by 40% through tree-shaking and code splitting\n- Pioneered server-side rendering migration improving Core Web Vitals by 60%\n- Mentored team of 8 frontend engineers\n\nSenior Frontend Developer, Spotify (2016-2020)\n- Built React player components for Spotify Web Player\n- Implemented offline-first PWA features using Service Workers\n- Led performance optimization initiative reducing Time to Interactive by 3 seconds",
+        "education": "B.S. Computer Science, University of Washington (2012-2016)\nGPA: 3.8/4.0",
+        "skills": "React, TypeScript, Next.js, Webpack, Performance Optimization, Server-Side Rendering, Web Workers, GraphQL, Testing",
+        "projects": "- Open-source: React performance monitoring library (8k GitHub stars)\n- Published blog series on React rendering optimization (100k+ reads)",
+        "references": "David Park, Engineering Director at Airbnb | d.park@airbnb.com\nAnna Johansson, Team Lead at Spotify | a.johansson@spotify.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "David Park", "response": "Thomas is a talented frontend engineer. He made significant contributions to our search experience. I should note his title was Senior Engineer, not Staff, and the team he 'mentored' was more of an informal knowledge-sharing group rather than direct reports. His technical skills in React performance are genuinely excellent though."},
+        "ref2": {"name": "Anna Johansson", "response": "Thomas worked on the web player team at Spotify. He was a strong React developer. The offline-first PWA work was a team initiative that he participated in. His individual contribution was primarily on the audio playback components."}
+      },
+      "clarification_answers": {
+        "title_clarification": "My title at Airbnb was Senior Software Engineer. I was performing Staff-level work and was in the promotion pipeline when I left.",
+        "mentoring": "I ran weekly React knowledge-sharing sessions and paired with junior engineers regularly. It wasn't a formal management role.",
+        "performance_metrics": "The 40% bundle size reduction was measured across the search experience codebase that I owned. Core Web Vitals improvements were measured after my SSR migration PR was deployed."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": ["title_inflation", "scope_exaggeration"],
+        "reasoning": "Strong candidate despite resume embellishment: real React expertise, genuine performance optimization skills, reputable companies. Title inflation (Senior -> Staff) and exaggerated mentoring scope are common resume puffery but core skills are verified. Still an excellent hire for this role."
+      }
+    },
+    {
+      "id": "H6",
+      "job_description": "Backend Engineer: Go, distributed systems, 4+ years. High-throughput, low-latency systems experience required.",
+      "resume_sections": {
+        "header": "Andrei Kuznetsov | a.kuznetsov@email.com | +1-408-555-0666 | Sunnyvale, CA",
+        "summary": "Systems engineer with 7 years experience building high-performance distributed systems in Go and C++.",
+        "experience": "Staff Engineer, Uber (2020-2024)\n- Designed and built Go microservices for ride matching system handling 20M rides/day\n- Reduced P99 latency from 200ms to 50ms through custom memory allocator\n- Led architecture redesign of geospatial indexing service\n\nSenior Engineer, Cloudflare (2017-2020)\n- Built edge computing runtime in Go processing 25M requests/second\n- Implemented distributed rate limiter using consistent hashing\n- Contributed to open-source Go HTTP/3 library",
+        "education": "M.S. Computer Science, Stanford University (2015-2017)\nB.S. Computer Science, Moscow Institute of Physics and Technology (2011-2015)",
+        "skills": "Go, C++, Distributed Systems, gRPC, Protocol Buffers, etcd, Redis, Kafka, Kubernetes, Performance Tuning",
+        "projects": "- Custom Go garbage collector modifications for ultra-low-latency trading (published at GopherCon)\n- Built open-source distributed lock manager in Go (3k stars)",
+        "references": "Priya Sharma, VP Engineering at Uber | p.sharma@uber.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Priya Sharma", "response": "Andrei is a strong systems engineer. He worked on the ride matching team and contributed to latency improvements. His work was solid, though the P99 improvement from 200ms to 50ms was achieved through multiple initiatives involving several engineers, not Andrei alone. His Go skills are genuinely excellent."}
+      },
+      "clarification_answers": {
+        "latency_work": "The latency reduction was a multi-quarter effort. I led the memory allocator optimization which contributed about half of the improvement. Other optimizations included network path changes and database query optimization by other team members.",
+        "cloudflare_scale": "At Cloudflare, I worked on the Workers edge runtime. The 25M RPS figure is the total platform throughput; my components handled a subset of that traffic.",
+        "custom_gc": "The GC modifications were an experimental project. We presented findings at GopherCon but the changes were not merged into production Go runtime."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": ["metrics_misattribution"],
+        "reasoning": "Strong match despite some metric attribution issues: genuine Go and distributed systems expertise at Uber and Cloudflare. The latency improvement was a team effort but candidate was a key contributor. Technical depth is real."
+      }
+    },
+    {
+      "id": "H7",
+      "job_description": "Full Stack Developer: React, Node.js, 3+ years. Startup experience required, comfortable with ambiguity.",
+      "resume_sections": {
+        "header": "Emily Roberts | e.roberts@email.com | +1-415-555-0777 | San Francisco, CA",
+        "summary": "Serial startup engineer with 5 years of full-stack experience. Built and shipped 3 products from zero to launch.",
+        "experience": "Co-founder & CTO, QuickShip (2022-2024)\n- Built logistics SaaS platform from scratch using React and Node.js\n- Grew to 500 paying customers and $200K ARR\n- Managed engineering team of 4 developers\n\nFull Stack Developer, Notion (2020-2022)\n- Developed React components for Notion's block editor\n- Built Node.js APIs for workspace collaboration features\n- Shipped database views feature used by millions\n\nSoftware Engineer, Early-stage Startup (2019-2020)\n- Built MVP using React and Express.js\n- Company acquired after 8 months",
+        "education": "B.S. Computer Science, UC Berkeley (2015-2019)\nGPA: 3.9/4.0",
+        "skills": "React, Node.js, TypeScript, PostgreSQL, MongoDB, AWS, Docker, GraphQL, Prisma, Next.js",
+        "projects": "- QuickShip: logistics platform with real-time tracking and automated routing\n- Open-source: React state management library (1k stars)",
+        "references": "Michael Torres, VP Engineering at Notion | m.torres@notion.so\nJames Park, Angel Investor | j.park@investor.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Michael Torres", "response": "Emily was a good full-stack developer at Notion. She worked on the block editor team and contributed to database views. She was at Notion for about 18 months, not the full 2 years on her resume."},
+        "ref2": {"name": "James Park", "response": "I invested in QuickShip. Emily was the technical co-founder. The product had some traction but the $200K ARR figure was projected, not actual. Actual ARR at time of my last update was closer to $80K. The team was 2 developers including Emily, plus 2 contractors."}
+      },
+      "clarification_answers": {
+        "quickship_metrics": "The $200K ARR was our run-rate based on the most recent quarter's revenue extrapolated. Actual trailing 12-month revenue was lower as we were growing rapidly.",
+        "notion_duration": "I started in mid-2020 and left in early 2022. I rounded to full years on my resume.",
+        "team_size": "At QuickShip, we had 2 full-time developers and 2 regular contractors who worked 30+ hours/week."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": false,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": ["metrics_exaggeration", "date_rounding", "team_size_inflation"],
+        "reasoning": "Candidate has real startup and full-stack experience but consistently embellishes metrics: inflated ARR (projected vs actual), rounded dates, counted contractors as team members. The core experience and skills are genuine. For a startup role, the actual experience (18 months at Notion, real product built at QuickShip) is still relevant."
+      }
+    },
+    {
+      "id": "H8",
+      "job_description": "Security Engineer: Penetration testing, OWASP Top 10, cloud security. OSCP or CEH certification required. 3+ years.",
+      "resume_sections": {
+        "header": "Nathan Drake | n.drake@email.com | +1-571-555-0888 | Reston, VA",
+        "summary": "Offensive security specialist with OSCP certification and 5 years of penetration testing experience across government and private sector.",
+        "experience": "Senior Penetration Tester, CrowdStrike (2021-2024)\n- Conducted 100+ penetration tests for Fortune 500 clients\n- Discovered critical zero-day vulnerability in popular CMS platform\n- Built automated reconnaissance framework used by team of 15\n\nSecurity Consultant, Mandiant (2019-2021)\n- Performed red team assessments for government agencies\n- Identified vulnerabilities in cloud infrastructure (AWS, Azure)\n- Wrote detailed remediation reports for C-suite executives",
+        "education": "B.S. Computer Science, Virginia Tech (2015-2019)\nGPA: 3.4/4.0\nOSCP Certified (2020)\nAWS Certified Security Specialty (2022)",
+        "skills": "Penetration Testing, Burp Suite, Metasploit, Nmap, Python, Bash, AWS Security, OWASP Top 10, Kali Linux, Terraform",
+        "projects": "- Discovered CVE-2023-XXXXX in WordPress plugin (responsible disclosure)\n- Built custom C2 framework for red team operations\n- Speaker at DEF CON 31 on cloud exploitation techniques",
+        "references": "Katherine Moore, Director of Offensive Security at CrowdStrike | k.moore@crowdstrike.com\nDr. James Wilson, Professor at Virginia Tech | j.wilson@vt.edu"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Katherine Moore", "response": "Nathan worked on our pen testing team. He completed around 40-50 engagements during his time here, not 100+. He is technically capable but the 'zero-day' he mentions was actually a known vulnerability that hadn't been patched. His reconnaissance framework was a useful internal tool but was used by 5 team members, not 15."},
+        "ref2": {"name": "Dr. James Wilson", "response": "Nathan was a student in my cybersecurity course. He was above average but not exceptional. I'm not aware of a DEF CON speaking engagement."}
+      },
+      "clarification_answers": {
+        "engagement_count": "I counted all assessments including smaller vulnerability scans and phishing simulations. Pure penetration tests were around 50.",
+        "zero_day": "The vulnerability I found was a novel exploitation vector for a known but unpatched CVE. I consider it a zero-day because the specific attack path was previously unknown.",
+        "defcon": "I presented at a DEF CON village/workshop, not on the main stage. I may have overstated this on my resume."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "reject",
+        "is_fraud": false,
+        "fraud_indicators": ["engagement_count_inflated", "achievement_exaggeration", "conference_misrepresentation", "team_size_inflation"],
+        "reasoning": "Pattern of systematic exaggeration: doubled engagement count, misrepresented known vuln as zero-day, inflated tool adoption numbers, misrepresented DEF CON village talk as main conference. While technically skilled, the persistent pattern of embellishment across every metric suggests unreliability for a security role where integrity and precision are paramount."
+      }
+    },
+    {
+      "id": "H9",
+      "job_description": "iOS Developer: Swift, 4+ years, App Store published apps. Must have experience with CI/CD for mobile.",
+      "resume_sections": {
+        "header": "Olivia Martinez | o.martinez@email.com | +1-213-555-0999 | Los Angeles, CA",
+        "summary": "iOS developer with 6 years of Swift experience building consumer mobile applications with millions of downloads.",
+        "experience": "Senior iOS Developer, TikTok (2021-2024)\n- Built SwiftUI features for TikTok's video creation tools\n- Optimized video processing pipeline reducing encoding time by 50%\n- Implemented Fastlane CI/CD pipeline for automated App Store submissions\n\niOS Developer, Hinge (2018-2021)\n- Developed matching algorithm UI using UIKit and Core Animation\n- Built real-time chat feature using WebSockets\n- Maintained app with 4.5+ star rating on App Store",
+        "education": "B.S. Computer Science, UCLA (2014-2018)\nGPA: 3.6/4.0\nApple Developer Academy Graduate (2018)",
+        "skills": "Swift, SwiftUI, UIKit, Xcode, Core Data, AVFoundation, Combine, Fastlane, Jenkins, Git, Agile",
+        "projects": "- Published personal finance app: 100k+ downloads on App Store\n- Built AR filters app using ARKit and Vision framework",
+        "references": "Kevin Zhang, iOS Lead at TikTok | k.zhang@tiktok.com\nSamantha Lee, Engineering Manager at Hinge | s.lee@hinge.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Kevin Zhang", "response": "Olivia is a strong iOS developer. She worked on the video creation tools team. The encoding optimization was primarily done by our video infrastructure team; Olivia's contribution was on the UI layer that triggered the encoding. Her Fastlane work is accurate - she set up our iOS CI/CD pipeline."},
+        "ref2": {"name": "Samantha Lee", "response": "Olivia was a solid iOS developer on our team. She worked on the chat feature and various UI components. The matching algorithm UI was a collaborative effort. She was reliable and delivered quality code consistently."}
+      },
+      "clarification_answers": {
+        "video_optimization": "I worked on optimizing the video creation UI flow which reduced the perceived encoding time. The actual video codec optimization was handled by a separate infrastructure team.",
+        "personal_app": "My personal finance app has 100k cumulative downloads since launch. Current monthly active users are around 15k.",
+        "ci_cd": "I set up Fastlane with match for code signing, snapshot for screenshots, and deliver for App Store submissions."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": ["scope_exaggeration"],
+        "reasoning": "Strong candidate: real iOS expertise, published apps, CI/CD experience. Minor scope exaggeration on video encoding (UI-level optimization vs infrastructure-level). Overall a good hire for the role."
+      }
+    },
+    {
+      "id": "H10",
+      "job_description": "Data Engineer: Spark, Airflow, Python, 4+ years. Must have experience with real-time streaming and batch processing.",
+      "resume_sections": {
+        "header": "Chen Wei | c.wei@email.com | +86-10-5555-0111 | Beijing, China",
+        "summary": "Data platform engineer with 7 years experience building large-scale data pipelines at ByteDance and Alibaba.",
+        "experience": "Senior Data Engineer, ByteDance (2020-2024)\n- Built real-time recommendation data pipeline processing 100TB/day using Spark Streaming\n- Managed 2000+ Airflow DAGs for data warehouse orchestration\n- Designed and implemented data quality framework catching 99.5% of data anomalies\n\nData Engineer, Alibaba Cloud (2017-2020)\n- Developed batch processing pipelines using Spark on MaxCompute\n- Built real-time analytics using Flink for Double 11 shopping festival\n- Processed 10B+ events during peak traffic periods",
+        "education": "M.S. Computer Science, Tsinghua University (2015-2017)\nB.S. Computer Science, Zhejiang University (2011-2015)",
+        "skills": "Apache Spark, Apache Flink, Airflow, Python, Scala, Kafka, Hive, HDFS, AWS, Kubernetes",
+        "projects": "- Designed unified batch-streaming data platform for ByteDance's ads system\n- Built ML feature store processing 50M feature vectors/second",
+        "references": "Dr. Li Ming, VP Data Platform at ByteDance | l.ming@bytedance.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Dr. Li Ming", "response": "Chen Wei is one of our strongest data engineers. His work on the recommendation pipeline is outstanding. The 100TB/day figure is accurate for the pipeline he architected. He managed a significant portion of our Airflow infrastructure though the 2000 DAGs count includes DAGs managed by his team of 5, not just him personally."}
+      },
+      "clarification_answers": {
+        "scale_clarification": "The 100TB/day pipeline serves our recommendation system. I designed the architecture and wrote the core Spark jobs. My team of 5 maintains and extends it.",
+        "airflow_ownership": "I personally wrote about 500 DAGs and manage the overall orchestration platform. The 2000 DAG count includes DAGs owned by the broader team.",
+        "flink_vs_spark": "At Alibaba, I used Flink for real-time. At ByteDance, I primarily use Spark Streaming. I'm comfortable with both paradigms."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": ["team_metrics_as_individual"],
+        "reasoning": "Excellent candidate: genuine large-scale data engineering experience. Team metrics were partially attributed individually but reference confirms technical depth and scale of work. Strong hire for any data engineering role."
+      }
+    },
+    {
+      "id": "H11",
+      "job_description": "Platform Engineer: Kubernetes, service mesh, observability. 5+ years. Must have experience running production clusters at scale.",
+      "resume_sections": {
+        "header": "James Mitchell | j.mitchell@email.com | +1-512-555-0222 | Austin, TX",
+        "summary": "Platform engineer with 6 years experience building and operating Kubernetes platforms at scale. Previously at Datadog and HashiCorp.",
+        "experience": "Staff Platform Engineer, Datadog (2021-2024)\n- Operated 5000-node Kubernetes clusters across 3 cloud providers\n- Implemented Istio service mesh for 800+ microservices\n- Built custom Kubernetes operators for automated database provisioning\n- Reduced infrastructure costs by 30% through bin-packing optimization\n\nPlatform Engineer, HashiCorp (2018-2021)\n- Contributed to Consul service mesh development\n- Built Terraform providers for internal infrastructure\n- Managed Nomad clusters for CI/CD workloads",
+        "education": "B.S. Computer Engineering, University of Texas at Austin (2014-2018)\nGPA: 3.5/4.0\nCKA (Certified Kubernetes Administrator) - 2020\nCKS (Certified Kubernetes Security Specialist) - 2022",
+        "skills": "Kubernetes, Istio, Consul, Terraform, Prometheus, Grafana, Go, Python, AWS, GCP, Azure",
+        "projects": "- Built multi-cloud Kubernetes federation framework\n- Open-source: Kubernetes cost optimization tool (5k GitHub stars)",
+        "references": "Patricia Adams, VP Platform at Datadog | p.adams@datadog.com\nSean O'Brien, Engineering Manager at HashiCorp | s.obrien@hashicorp.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Patricia Adams", "response": "James was a Senior Platform Engineer on our team (not Staff). He worked on Kubernetes operations and made real contributions to our service mesh adoption. The 5000-node cluster figure is our total fleet that his team of 12 managed. He was one of the key engineers on the Istio rollout."},
+        "ref2": {"name": "Sean O'Brien", "response": "James worked on our platform team and contributed to Consul development. He was a solid engineer. His Terraform provider work was good quality. He left on good terms."}
+      },
+      "clarification_answers": {
+        "title_at_datadog": "My title was Senior Platform Engineer. I was performing Staff-level work and had a Staff promotion discussion before I decided to leave.",
+        "cluster_scale": "Our team managed 5000-node clusters. I personally handled capacity planning and cluster upgrades for one of our 3 production clusters (~1700 nodes).",
+        "istio_contribution": "I was one of 3 engineers who drove the Istio service mesh adoption. I owned the traffic management and observability configuration."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": ["title_inflation", "scale_exaggeration"],
+        "reasoning": "Strong candidate with genuine Kubernetes expertise at reputable infrastructure companies. Title inflation (Senior -> Staff) is common. Team metrics presented as individual, but actual individual scope (~1700 nodes) is still impressive. Both references confirm technical competency."
+      }
+    },
+    {
+      "id": "H12",
+      "job_description": "Backend Developer: Python, FastAPI or Django, 3+ years. Experience with payment systems and PCI compliance preferred.",
+      "resume_sections": {
+        "header": "Sofia Andersson | s.andersson@email.com | +46-8-555-0333 | Stockholm, Sweden",
+        "summary": "Backend developer with 5 years of experience in fintech and payment systems. Expert in PCI DSS compliance and secure payment processing.",
+        "experience": "Senior Backend Developer, Klarna (2021-2024)\n- Built FastAPI microservices for Klarna's Buy Now Pay Later product\n- Implemented PCI DSS Level 1 compliant payment tokenization\n- Designed fraud detection API processing 2M transactions/day\n- Led migration from monolith to microservices architecture\n\nBackend Developer, iZettle (now Zettle by PayPal) (2019-2021)\n- Developed Django APIs for point-of-sale payment processing\n- Built webhook delivery system with guaranteed at-least-once delivery\n- Maintained PCI DSS Level 2 compliance for card processing",
+        "education": "M.S. Computer Science, KTH Royal Institute of Technology (2017-2019)\nB.S. Computer Science, Uppsala University (2013-2017)",
+        "skills": "Python, FastAPI, Django, PostgreSQL, Redis, Kafka, Docker, Kubernetes, AWS, PCI DSS, Stripe API",
+        "projects": "- Built open-source payment webhook testing framework (800 stars)\n- Designed idempotent payment processing pattern adopted as company standard",
+        "references": "Erik Lindqvist, Engineering Director at Klarna | e.lindqvist@klarna.com\nAnna Bjork, Team Lead at Zettle | a.bjork@zettle.com"
+      },
+      "reference_check_results": {
+        "ref1": {"name": "Erik Lindqvist", "response": "Sofia is an excellent backend developer. She was instrumental in our BNPL backend development. Her PCI compliance work is genuine - she led our tokenization implementation. The fraud detection API was a team effort but Sofia designed the core scoring logic. I highly recommend her."},
+        "ref2": {"name": "Anna Bjork", "response": "Sofia was a strong developer on our payments team. She has deep knowledge of payment processing and compliance requirements. Her webhook system was well-engineered and reliable."}
+      },
+      "clarification_answers": {
+        "pci_depth": "I've been through 2 PCI DSS audits. At Klarna, I led the engineering side of our Level 1 assessment, implementing tokenization, encryption, and access controls.",
+        "fraud_detection": "I designed the scoring API that combines rule-based and ML-based signals. The ML models were trained by our data science team.",
+        "migration_scope": "The monolith-to-microservices migration was a 6-month project involving 4 engineers. I led the technical planning and implemented the most complex services."
+      },
+      "verification_data": {
+        "education_verified": true,
+        "employment_dates_verified": true,
+        "certifications_valid": true
+      },
+      "ground_truth": {
+        "decision": "accept",
+        "is_fraud": false,
+        "fraud_indicators": [],
+        "reasoning": "Excellent match: 5 years Python backend in fintech, real PCI DSS compliance experience, FastAPI and Django, payment systems expertise at Klarna and Zettle. References strongly positive with minor clarifications on team scope."
+      }
+    }
+  ]
 }

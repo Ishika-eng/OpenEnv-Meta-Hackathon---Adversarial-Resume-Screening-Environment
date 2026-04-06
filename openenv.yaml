@@ -1,23 +1,44 @@
 name: adversarial-resume-screening
-version: 1.0.0
-description: "An environment where AI agents evaluate resumes against job descriptions and detect fraudulent claims."
+version: 2.0.0
+description: "Multi-step environment where AI agents investigate resumes, gather evidence through reference checks and credential verification, and detect fraud before making hiring decisions."
 
-# Define the observation structure
 observation:
-  resume_text: string
-  job_description: string
   task_type: string
+  phase: string
+  job_description: string
+  visible_sections: object
+  available_actions: array
+  clarification_response: string
+  reference_response: string
+  verification_result: string
+  steps_remaining: integer
+  feedback: string
+  done: boolean
+  reward: float
 
-# Define the action space
 action:
+  action_type: string
+  section: string
+  question: string
+  reference_id: string
   decision: string
   fraud_flag: boolean
   confidence: float
+  fraud_reasoning: string
 
-# Reward configuration
 reward_range: [-1.0, 1.0]
 
-# Metadata for OpenEnv validation
+tasks:
+  - name: easy
+    description: "Clear match/mismatch cases with obvious fraud indicators. 6-step budget."
+    num_episodes: 12
+  - name: medium
+    description: "Subtle mismatches and embellished resumes requiring careful analysis. 8-step budget."
+    num_episodes: 12
+  - name: hard
+    description: "Adversarial resumes with deeply embedded fraud, title inflation, and scope exaggeration that challenges frontier models. 10-step budget."
+    num_episodes: 12
+
 requirements:
   - openenv-core>=0.1.0
   - python>=3.11

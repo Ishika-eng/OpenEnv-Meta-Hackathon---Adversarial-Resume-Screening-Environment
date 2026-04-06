@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adversarial-resume-screening"
-version = "1.0.0"
-description = "AI agent environment for evaluating resumes and detecting fraud."
+version = "2.0.0"
+description = "Multi-step OpenEnv environment for adversarial resume screening with fraud detection."
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -17,7 +17,8 @@ dependencies = [
     "pydantic",
     "fastapi",
     "uvicorn",
-    "openai"
+    "openai",
+    "python-dotenv"
 ]
 
 [project.scripts]
