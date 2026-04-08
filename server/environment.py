@@ -31,15 +31,28 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
     Multi-step resume screening environment. The agent investigates a resume
     by viewing sections, checking references, verifying credentials, and asking
     clarifying questions before submitting a final hiring decision.
+
+    NOTE: The OpenEnv HTTP server creates a new instance for each /reset and /step
+    call. Class-level state (_episode_store) persists episode data across instances.
     """
     SUPPORTS_CONCURRENT_SESSIONS = True
+
+    # Class-level state persistence: survives across HTTP request instances.
+    # The OpenEnv HTTP server creates a fresh env per request, so instance
+    # state would be lost. This dict stores the active episode state.
+    _episode_store: Dict[str, dict] = {}
+    _default_session: Optional[str] = None
+    _dataset_cache: Optional[Dict[str, list]] = None
 
     def __init__(self):
         super().__init__()
         self.data_path = "data/resumes.json"
-        self.dataset = load_dataset(self.data_path)
+        # Cache dataset at class level to avoid re-reading JSON per request
+        if ResumeScreeningEnvironment._dataset_cache is None:
+            ResumeScreeningEnvironment._dataset_cache = load_dataset(self.data_path)
+        self.dataset = ResumeScreeningEnvironment._dataset_cache
 
-        # Per-episode state
+        # Per-episode state (initialized fresh, restored from store in step)
         self._task_type: str = "easy"
         self._current_index: int = 0
         self._sample: Optional[dict] = None
@@ -52,12 +65,54 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
         self._investigation_score: float = 0.0
         self._done: bool = False
 
+    def _save_state(self) -> None:
+        """Persist current episode state to class-level store."""
+        session_key = ResumeScreeningEnvironment._default_session
+        if session_key is None:
+            return
+        ResumeScreeningEnvironment._episode_store[session_key] = {
+            "task_type": self._task_type,
+            "current_index": self._current_index,
+            "sample": self._sample,
+            "step_count": self._step_count,
+            "max_steps": self._max_steps,
+            "sections_viewed": list(self._sections_viewed),
+            "clarifications_asked": self._clarifications_asked,
+            "references_checked": self._references_checked,
+            "verifications_done": self._verifications_done,
+            "investigation_score": self._investigation_score,
+            "done": self._done,
+        }
+
+    def _restore_state(self) -> bool:
+        """Restore episode state from class-level store. Returns True if restored."""
+        session_key = ResumeScreeningEnvironment._default_session
+        if session_key is None or session_key not in ResumeScreeningEnvironment._episode_store:
+            return False
+        state = ResumeScreeningEnvironment._episode_store[session_key]
+        self._task_type = state["task_type"]
+        self._current_index = state["current_index"]
+        self._sample = state["sample"]
+        self._step_count = state["step_count"]
+        self._max_steps = state["max_steps"]
+        self._sections_viewed = list(state["sections_viewed"])
+        self._clarifications_asked = state["clarifications_asked"]
+        self._references_checked = state["references_checked"]
+        self._verifications_done = state["verifications_done"]
+        self._investigation_score = state["investigation_score"]
+        self._done = state["done"]
+        return True
+
     # ------------------------------------------------------------------
     # reset
     # ------------------------------------------------------------------
     def reset(self, task_type: Optional[str] = None, seed: Optional[int] = None, **kwargs) -> ResumeObservation:
         if seed is not None:
             random.seed(seed)
+
+        # Generate a session key for state persistence
+        episode_id = kwargs.get("episode_id") or "default"
+        ResumeScreeningEnvironment._default_session = episode_id
 
         # Select task type
         if task_type and task_type in self.dataset and len(self.dataset[task_type]) > 0:
@@ -84,6 +139,9 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
         visible = {"header": self._sample["resume_sections"]["header"]}
         self._sections_viewed.append("header")
 
+        # Persist state for subsequent step() calls
+        self._save_state()
+
         return ResumeObservation(
             task_type=self._task_type,
             phase="initial",
@@ -100,6 +158,10 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
     # step
     # ------------------------------------------------------------------
     def step(self, action: ResumeAction) -> ResumeObservation:
+        # Restore state from class-level store (HTTP server creates new instances)
+        if self._sample is None:
+            self._restore_state()
+
         if self._done or self._sample is None:
             return self._terminal_obs(reward=0.0, feedback="Episode already ended.")
 
@@ -107,17 +169,21 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
         remaining = self._max_steps - self._step_count
 
         if action.action_type == "view_section":
-            return self._handle_view_section(action, remaining)
+            obs = self._handle_view_section(action, remaining)
         elif action.action_type == "ask_clarification":
-            return self._handle_ask_clarification(action, remaining)
+            obs = self._handle_ask_clarification(action, remaining)
         elif action.action_type == "check_reference":
-            return self._handle_check_reference(action, remaining)
+            obs = self._handle_check_reference(action, remaining)
         elif action.action_type == "verify_credential":
-            return self._handle_verify_credential(action, remaining)
+            obs = self._handle_verify_credential(action, remaining)
         elif action.action_type == "submit_decision":
-            return self._handle_submit_decision(action)
+            obs = self._handle_submit_decision(action)
         else:
-            return self._obs(reward=0.0, remaining=remaining, feedback="Unknown action type.")
+            obs = self._obs(reward=0.0, remaining=remaining, feedback="Unknown action type.")
+
+        # Persist updated state for next step() call
+        self._save_state()
+        return obs
 
     # ------------------------------------------------------------------
     # Action handlers
