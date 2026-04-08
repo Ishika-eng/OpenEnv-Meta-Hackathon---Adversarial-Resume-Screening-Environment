@@ -16,31 +16,79 @@ STDOUT FORMAT:
     [END]   success=<true|false> steps=<n> score=<score> rewards=<r1,r2,...,rn>
 """
 
-import asyncio
 import json
 import os
 import sys
 import textwrap
 import warnings
+import logging
 from typing import List, Optional
 
 warnings.filterwarnings("ignore")
-# Suppress noisy library logs but keep stderr usable for real errors
-import logging
 logging.disable(logging.WARNING)
 
+# --- Optional dotenv loading (graceful if not installed) ---
+try:
+    from dotenv import load_dotenv
+    env_path = os.path.join(os.getcwd(), ".env")
+    if os.path.exists(env_path):
+        load_dotenv(dotenv_path=env_path, override=True)
+    else:
+        load_dotenv()
+except ImportError:
+    pass
+
 from openai import OpenAI
-from dotenv import load_dotenv
 
-from client import ResumeEnv
-from models import ResumeAction
+# --- HTTP client for environment (self-contained, no openenv dependency) ---
+try:
+    import requests
+except ImportError:
+    import urllib.request
+    import urllib.error
 
-env_path = os.path.join(os.getcwd(), ".env")
-if os.path.exists(env_path):
-    load_dotenv(dotenv_path=env_path, override=True)
-else:
-    load_dotenv()
+    class _FallbackRequests:
+        """Minimal requests-like wrapper using urllib."""
+        class _Response:
+            def __init__(self, data, status_code):
+                self.status_code = status_code
+                self._data = data
+            def json(self):
+                return json.loads(self._data)
+            def raise_for_status(self):
+                if self.status_code >= 400:
+                    raise Exception(f"HTTP {self.status_code}")
 
+        @staticmethod
+        def post(url, json=None, headers=None, timeout=None):
+            data = json_module.dumps(json).encode("utf-8") if json else b""
+            req = urllib.request.Request(
+                url, data=data,
+                headers={"Content-Type": "application/json", **(headers or {})},
+                method="POST"
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=timeout or 60) as resp:
+                    body = resp.read().decode("utf-8")
+                    return _FallbackRequests._Response(body, resp.status)
+            except urllib.error.HTTPError as e:
+                body = e.read().decode("utf-8")
+                return _FallbackRequests._Response(body, e.code)
+
+        @staticmethod
+        def get(url, timeout=None):
+            req = urllib.request.Request(url, method="GET")
+            with urllib.request.urlopen(req, timeout=timeout or 60) as resp:
+                body = resp.read().decode("utf-8")
+                return _FallbackRequests._Response(body, resp.status)
+
+    requests = _FallbackRequests()
+    json_module = json
+
+
+# ============================================================
+# MANDATORY ENVIRONMENT VARIABLES
+# ============================================================
 HF_TOKEN = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.groq.com/openai/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "llama-3.3-70b-versatile")
@@ -80,6 +128,69 @@ Respond with ONLY valid JSON, no other text.
 """)
 
 
+# ============================================================
+# Self-contained environment client (raw HTTP, no openenv needed)
+# ============================================================
+class EnvHTTPClient:
+    """Lightweight HTTP client for the OpenEnv environment."""
+
+    def __init__(self, base_url: str):
+        self.base_url = base_url.rstrip("/")
+
+    def reset(self, task_type: str = "easy", seed: int = 42) -> dict:
+        """POST /reset and return the observation dict."""
+        payload = {"episode_id": f"ep-{task_type}-{seed}", "seed": seed,
+                   "task_type": task_type}
+        resp = requests.post(f"{self.base_url}/reset", json=payload, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        # Handle nested or flat observation format
+        obs = data.get("observation", data)
+        result = {
+            "task_type": obs.get("task_type", task_type),
+            "phase": obs.get("phase", "initial"),
+            "job_description": obs.get("job_description", ""),
+            "visible_sections": obs.get("visible_sections", {}),
+            "available_actions": obs.get("available_actions", []),
+            "clarification_response": obs.get("clarification_response"),
+            "reference_response": obs.get("reference_response"),
+            "verification_result": obs.get("verification_result"),
+            "steps_remaining": obs.get("steps_remaining", 0),
+            "feedback": obs.get("feedback", ""),
+            "done": data.get("done", obs.get("done", False)),
+            "reward": data.get("reward", obs.get("reward", 0.0)) or 0.0,
+        }
+        return result
+
+    def step(self, action: dict) -> dict:
+        """POST /step with an action dict and return the observation dict."""
+        # Remove None values from action
+        clean_action = {k: v for k, v in action.items() if v is not None}
+        payload = {"action": clean_action, "timeout_s": 30}
+        resp = requests.post(f"{self.base_url}/step", json=payload, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        obs = data.get("observation", data)
+        result = {
+            "task_type": obs.get("task_type", ""),
+            "phase": obs.get("phase", ""),
+            "job_description": obs.get("job_description", ""),
+            "visible_sections": obs.get("visible_sections", {}),
+            "available_actions": obs.get("available_actions", []),
+            "clarification_response": obs.get("clarification_response"),
+            "reference_response": obs.get("reference_response"),
+            "verification_result": obs.get("verification_result"),
+            "steps_remaining": obs.get("steps_remaining", 0),
+            "feedback": obs.get("feedback", ""),
+            "done": data.get("done", obs.get("done", False)),
+            "reward": data.get("reward", obs.get("reward", 0.0)) or 0.0,
+        }
+        return result
+
+
+# ============================================================
+# Logging helpers
+# ============================================================
 def log_start(task: str, env: str, model: str) -> None:
     print(f"[START] task={task} env={env} model={model}", flush=True)
 
@@ -95,6 +206,9 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
     print(f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}", flush=True)
 
 
+# ============================================================
+# Prompt builder
+# ============================================================
 def build_user_prompt(obs_data: dict, step: int, history: List[str]) -> str:
     visible = obs_data.get("visible_sections", {})
     sections_text = ""
@@ -134,6 +248,9 @@ Choose your next action (JSON only). If steps_remaining <= 1, you MUST submit_de
 """)
 
 
+# ============================================================
+# LLM action parser
+# ============================================================
 def parse_model_action(client: OpenAI, obs_data: dict, step: int, history: List[str]) -> dict:
     user_prompt = build_user_prompt(obs_data, step, history)
 
@@ -143,8 +260,8 @@ def parse_model_action(client: OpenAI, obs_data: dict, step: int, history: List[
         {"action_type": "view_section", "section": "skills"},
         {"action_type": "check_reference", "reference_id": "ref1"},
         {"action_type": "verify_credential"},
-        {"action_type": "submit_decision", "decision": "reject", "fraud_flag": False, "confidence": 0.5,
-         "fraud_reasoning": "insufficient information"},
+        {"action_type": "submit_decision", "decision": "reject", "fraud_flag": False,
+         "confidence": 0.5, "fraud_reasoning": "insufficient information"},
     ]
 
     remaining = obs_data.get("steps_remaining", 0)
@@ -175,7 +292,6 @@ def parse_model_action(client: OpenAI, obs_data: dict, step: int, history: List[
         if "action_type" not in parsed:
             return fallback
 
-        # Validate and clean up
         action = {"action_type": parsed["action_type"]}
         at = parsed["action_type"]
 
@@ -220,10 +336,12 @@ def action_to_str(action: dict) -> str:
     return f"{at}()"
 
 
-async def run_episode(client: OpenAI, env: ResumeEnv, task_type: str, episode_num: int) -> tuple:
+# ============================================================
+# Episode runner
+# ============================================================
+def run_episode(client: OpenAI, env: EnvHTTPClient, task_type: str, episode_num: int) -> tuple:
     """Run a single multi-step episode. Returns (steps_taken, episode_rewards)."""
-    observation = await env.reset()
-    obs_data = observation.model_dump() if hasattr(observation, "model_dump") else observation.__dict__
+    obs_data = env.reset(task_type=task_type, seed=episode_num)
 
     history: List[str] = []
     episode_rewards: List[float] = []
@@ -242,9 +360,7 @@ async def run_episode(client: OpenAI, env: ResumeEnv, task_type: str, episode_nu
             action_dict = parse_model_action(client, obs_data, step, history)
             action_str = action_to_str(action_dict)
 
-            action = ResumeAction(**action_dict)
-            observation = await env.step(action)
-            obs_data = observation.model_dump() if hasattr(observation, "model_dump") else observation.__dict__
+            obs_data = env.step(action_dict)
 
             reward = obs_data.get("reward", 0.0) or 0.0
             done = obs_data.get("done", False)
@@ -271,28 +387,25 @@ async def run_episode(client: OpenAI, env: ResumeEnv, task_type: str, episode_nu
     return step, episode_rewards
 
 
-async def main() -> None:
+# ============================================================
+# Main
+# ============================================================
+def main() -> None:
     client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-    env = ResumeEnv(base_url=ENV_URL)
+    env = EnvHTTPClient(base_url=ENV_URL)
 
     all_rewards: List[float] = []
     total_steps = 0
 
     for task_type in TASK_TYPES:
         for ep in range(1, EPISODES_PER_TASK + 1):
-            steps, rewards = await run_episode(client, env, task_type, ep)
+            steps, rewards = run_episode(client, env, task_type, ep)
             total_steps += steps
             all_rewards.extend(rewards)
-
-    if hasattr(env, "close"):
-        try:
-            await env.close()
-        except Exception:
-            pass
 
     overall_score = sum(all_rewards) / MAX_TOTAL_REWARD if MAX_TOTAL_REWARD > 0 else 0.0
     overall_score = max(0.0, min(1.0, overall_score))
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
