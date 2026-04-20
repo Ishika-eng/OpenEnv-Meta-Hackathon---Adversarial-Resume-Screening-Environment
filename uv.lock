@@ -15,13 +15,14 @@ resolution-markers = [
 
 [[package]]
 name = "adversarial-resume-screening"
-version = "1.0.0"
+version = "3.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "openai" },
     { name = "openenv-core" },
     { name = "pydantic" },
+    { name = "python-dotenv" },
     { name = "uvicorn" },
 ]
 
@@ -31,6 +32,7 @@ requires-dist = [
     { name = "openai" },
     { name = "openenv-core" },
     { name = "pydantic" },
+    { name = "python-dotenv" },
     { name = "uvicorn" },
 ]
 
