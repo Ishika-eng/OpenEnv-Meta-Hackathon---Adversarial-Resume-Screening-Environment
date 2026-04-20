@@ -136,10 +136,12 @@ class EnvHTTPClient:
 
     def __init__(self, base_url: str):
         self.base_url = base_url.rstrip("/")
+        self._current_episode_id: Optional[str] = None
 
     def reset(self, task_type: str = "easy", seed: int = 42) -> dict:
         """POST /reset and return the observation dict."""
-        payload = {"episode_id": f"ep-{task_type}-{seed}", "seed": seed,
+        self._current_episode_id = f"ep-{task_type}-{seed}"
+        payload = {"episode_id": self._current_episode_id, "seed": seed,
                    "task_type": task_type}
         resp = requests.post(f"{self.base_url}/reset", json=payload, timeout=30)
         resp.raise_for_status()
@@ -164,8 +166,10 @@ class EnvHTTPClient:
 
     def step(self, action: dict) -> dict:
         """POST /step with an action dict and return the observation dict."""
-        # Remove None values from action
+        # Remove None values from action; embed episode_id for concurrent-session fix
         clean_action = {k: v for k, v in action.items() if v is not None}
+        if self._current_episode_id:
+            clean_action["episode_id"] = self._current_episode_id
         payload = {"action": clean_action, "timeout_s": 30}
         resp = requests.post(f"{self.base_url}/step", json=payload, timeout=30)
         resp.raise_for_status()

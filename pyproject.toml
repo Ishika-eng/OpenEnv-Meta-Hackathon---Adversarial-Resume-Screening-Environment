@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adversarial-resume-screening"
-version = "2.0.0"
+version = "3.0.0"
 description = "Multi-step OpenEnv environment for adversarial resume screening with fraud detection."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,7 +22,8 @@ dependencies = [
 ]
 
 [project.scripts]
-server = "server.app:main"
+server = "server.fleet_app:main"
+server-legacy = "server.app:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

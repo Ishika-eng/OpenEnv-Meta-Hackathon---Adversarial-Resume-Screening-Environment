@@ -158,6 +158,12 @@ class ResumeScreeningEnvironment(Environment[ResumeObservation, ResumeAction, Re
     # step
     # ------------------------------------------------------------------
     def step(self, action: ResumeAction) -> ResumeObservation:
+        # CONCURRENT-SESSION FIX: if the client embeds episode_id in the action,
+        # use it to route to the correct session instead of relying on a shared
+        # _default_session that would be overwritten by concurrent resets.
+        if action.episode_id:
+            ResumeScreeningEnvironment._default_session = action.episode_id
+
         # Restore state from class-level store (HTTP server creates new instances)
         if self._sample is None:
             self._restore_state()

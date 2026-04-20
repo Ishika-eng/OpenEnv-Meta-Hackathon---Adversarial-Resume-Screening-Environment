@@ -1,31 +1,40 @@
 spec_version: 1
 name: adversarial-resume-screening
-version: 2.0.2
+version: 3.0.0
 type: space
 runtime: fastapi
-app: server.app:app
+app: server.fleet_app:app
 port: 7860
-description: "Multi-step environment where AI agents investigate resumes, gather evidence through reference checks and credential verification, and detect fraud before making hiring decisions."
+description: "Hiring Fleet: AI Oversight System — A multi-agent environment where three specialist AI agents (Fraud Specialist, Skills Specialist, Timeline Specialist) sequentially investigate resumes and submit findings. An Overseer agent synthesises the reports and issues the final hiring decision, enabling scalable AI oversight of the hiring pipeline."
 
 observation:
   task_type: string
-  phase: string
+  current_phase: string
+  role_instructions: string
   job_description: string
   visible_sections: object
+  specialist_reports: array
   available_actions: array
   clarification_response: string
   reference_response: string
   verification_result: string
   steps_remaining: integer
+  total_steps_remaining: integer
   feedback: string
   done: boolean
   reward: float
 
 action:
   action_type: string
+  episode_id: string
   section: string
   question: string
   reference_id: string
+  findings: string
+  has_issues: boolean
+  specialist_confidence: float
+  reinvestigation_target: string
+  reinvestigation_reason: string
   decision: string
   fraud_flag: boolean
   confidence: float
@@ -35,13 +44,13 @@ reward_range: [0.0, 1.0]
 
 tasks:
   - name: easy
-    description: "Clear match/mismatch cases with obvious fraud indicators. 6-step budget."
+    description: "Clear match/mismatch with obvious fraud. Budget: 7 total steps across all fleet phases."
     num_episodes: 12
   - name: medium
-    description: "Subtle mismatches and embellished resumes requiring careful analysis. 8-step budget."
+    description: "Subtle mismatches and embellished resumes. Budget: 10 total steps."
     num_episodes: 12
   - name: hard
-    description: "Adversarial resumes with deeply embedded fraud, title inflation, and scope exaggeration that challenges frontier models. 10-step budget."
+    description: "Deeply embedded fraud, title inflation, scope exaggeration. Budget: 13 total steps."
     num_episodes: 12
 
 requirements:
