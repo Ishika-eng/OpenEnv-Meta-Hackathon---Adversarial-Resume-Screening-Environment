@@ -1,0 +1,802 @@
+"""
+Fleet Resume Screening Environment
+====================================
+A multi-agent hiring fleet where three specialist AI agents (Fraud Specialist,
+Skills Specialist, Timeline Specialist) sequentially investigate a resume and
+submit reports. An Overseer agent then reads all three reports and makes the
+final hiring decision.
+
+This environment implements the "Fleet AI — Scalable Oversight" sub-theme of
+the Meta OpenEnv Hackathon Round 2.
+
+Phase structure:
+  Phase 0  fraud_specialist   — checks references, verifies credentials, hunts fraud signals
+  Phase 1  skills_specialist  — reads experience/education/skills, asks technical clarifications
+  Phase 2  timeline_specialist— checks chronological consistency across header/summary/experience
+  Phase 3  overseer           — reads all three reports, may request one reinvestigation, decides
+
+Episode budgets:
+  easy   →  7 total steps  (1 / 2 / 2 / 2 per phase)
+  medium → 10 total steps  (2 / 3 / 3 / 2 per phase)
+  hard   → 13 total steps  (3 / 4 / 4 / 2 per phase)
+"""
+
+import json
+import random
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+from openenv.core.env_server import Environment
+from models import (
+    FleetObservation, FleetAction, FleetState, SpecialistReport
+)
+
+
+VALID_SECTIONS = ["header", "summary", "experience", "education", "skills", "projects", "references"]
+
+# Which sections each specialist is primarily responsible for
+PHASE_SECTIONS = {
+    "fraud_specialist":   ["header", "references"],
+    "skills_specialist":  ["experience", "education", "skills", "projects"],
+    "timeline_specialist": ["header", "summary", "experience"],
+}
+
+# Phase ordering
+PHASES = ["fraud_specialist", "skills_specialist", "timeline_specialist", "overseer"]
+
+# Per-phase step budgets by difficulty
+# Each specialist needs at least 2 steps (1 investigation + 1 report)
+# Overseer needs at least 2 steps (optional reinvestigation + final decision)
+PHASE_BUDGETS: Dict[str, Dict[str, int]] = {
+    "easy":   {"fraud_specialist": 2, "skills_specialist": 2, "timeline_specialist": 2, "overseer": 1},
+    "medium": {"fraud_specialist": 2, "skills_specialist": 3, "timeline_specialist": 3, "overseer": 2},
+    "hard":   {"fraud_specialist": 3, "skills_specialist": 4, "timeline_specialist": 4, "overseer": 2},
+}
+# Total steps: easy=7, medium=10, hard=13
+
+# Role instructions delivered to each agent in the observation
+ROLE_INSTRUCTIONS: Dict[str, str] = {
+    "fraud_specialist": (
+        "You are the FRAUD SPECIALIST. Your job is to detect fraudulent or exaggerated claims. "
+        "Focus on: checking references (check_reference), verifying credentials (verify_credential), "
+        "and viewing the 'references' or 'header' sections. "
+        "When done, submit your report using submit_specialist_report with your findings, "
+        "has_issues (true if you found red flags), and confidence."
+    ),
+    "skills_specialist": (
+        "You are the SKILLS SPECIALIST. Your job is to assess whether the candidate's skills match "
+        "the job requirements. Focus on: viewing 'experience', 'education', 'skills', 'projects' sections, "
+        "and asking technical clarification questions (ask_clarification). "
+        "When done, submit your report using submit_specialist_report with your findings, "
+        "has_issues (true if skills are mismatched), and confidence."
+    ),
+    "timeline_specialist": (
+        "You are the TIMELINE SPECIALIST. Your job is to check for chronological consistency "
+        "and employment gaps. Focus on: viewing 'header', 'summary', 'experience' sections, "
+        "and asking clarifications about career gaps (ask_clarification). "
+        "When done, submit your report using submit_specialist_report with your findings, "
+        "has_issues (true if you found timeline inconsistencies or gaps), and confidence."
+    ),
+    "overseer": (
+        "You are the OVERSEER. You have received reports from three specialist agents. "
+        "Review the specialist_reports carefully. You may use request_reinvestigation ONCE "
+        "if you need more information from a specific specialist. "
+        "Then submit your final decision using submit_final_decision with: "
+        "decision (accept/reject), fraud_flag (true/false), confidence (0.0-1.0), "
+        "and fraud_reasoning (if fraud detected)."
+    ),
+}
+
+HIGH_VALUE_SECTIONS = ["experience", "education", "skills"]
+
+
+def load_dataset(path: str) -> Dict[str, list]:
+    json_path = Path(path)
+    if not json_path.exists():
+        raise FileNotFoundError(f"Dataset not found at: {json_path}")
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    for key in ["easy", "medium", "hard"]:
+        if key not in data:
+            raise ValueError(f"Dataset missing required category: {key}")
+    return data
+
+
+class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetState]):
+    """
+    Multi-agent fleet environment for resume screening.
+
+    Three specialist agents investigate in sequence, then an overseer synthesises
+    their reports and makes a final hiring/fraud decision. The environment manages
+    all phase transitions, step budgets, and reward calculations internally.
+
+    NOTE: The OpenEnv HTTP server creates a new instance per request.
+    Class-level _episode_store persists episode data across instances.
+    """
+    SUPPORTS_CONCURRENT_SESSIONS = True
+
+    _episode_store: Dict[str, dict] = {}
+    _default_session: Optional[str] = None
+    _dataset_cache: Optional[Dict[str, list]] = None
+
+    def __init__(self):
+        super().__init__()
+        self.data_path = "data/resumes.json"
+        if FleetResumeEnvironment._dataset_cache is None:
+            FleetResumeEnvironment._dataset_cache = load_dataset(self.data_path)
+        self.dataset = FleetResumeEnvironment._dataset_cache
+
+        # Per-episode state
+        self._task_type: str = "easy"
+        self._current_index: int = 0
+        self._sample: Optional[dict] = None
+        self._phase_idx: int = 0                    # 0-3
+        self._phase_steps_used: int = 0
+        self._total_steps_used: int = 0
+        self._max_total_steps: int = 7
+        self._sections_viewed: List[str] = []
+        self._specialist_reports: List[SpecialistReport] = []
+        self._references_checked: int = 0
+        self._verifications_done: int = 0
+        self._clarifications_asked: int = 0
+        self._reinvestigation_used: bool = False
+        self._done: bool = False
+        # Per-step response caches (instance, persisted in episode store)
+        self._last_clarification: Optional[str] = None
+        self._last_reference: Optional[str] = None
+        self._last_verification: Optional[str] = None
+        self._last_feedback: str = ""
+
+    # ------------------------------------------------------------------
+    # State persistence (class-level, survives across HTTP instances)
+    # ------------------------------------------------------------------
+    def _save_state(self) -> None:
+        key = FleetResumeEnvironment._default_session
+        if key is None:
+            return
+        FleetResumeEnvironment._episode_store[key] = {
+            "task_type": self._task_type,
+            "current_index": self._current_index,
+            "sample": self._sample,
+            "phase_idx": self._phase_idx,
+            "phase_steps_used": self._phase_steps_used,
+            "total_steps_used": self._total_steps_used,
+            "max_total_steps": self._max_total_steps,
+            "sections_viewed": list(self._sections_viewed),
+            "specialist_reports": [r.model_dump() for r in self._specialist_reports],
+            "references_checked": self._references_checked,
+            "verifications_done": self._verifications_done,
+            "clarifications_asked": self._clarifications_asked,
+            "reinvestigation_used": self._reinvestigation_used,
+            "done": self._done,
+            "last_clarification": self._last_clarification,
+            "last_reference": self._last_reference,
+            "last_verification": self._last_verification,
+            "last_feedback": self._last_feedback,
+        }
+
+    def _restore_state(self) -> bool:
+        key = FleetResumeEnvironment._default_session
+        if key is None or key not in FleetResumeEnvironment._episode_store:
+            return False
+        s = FleetResumeEnvironment._episode_store[key]
+        self._task_type = s["task_type"]
+        self._current_index = s["current_index"]
+        self._sample = s["sample"]
+        self._phase_idx = s["phase_idx"]
+        self._phase_steps_used = s["phase_steps_used"]
+        self._total_steps_used = s["total_steps_used"]
+        self._max_total_steps = s["max_total_steps"]
+        self._sections_viewed = list(s["sections_viewed"])
+        self._specialist_reports = [
+            SpecialistReport(**r) for r in s["specialist_reports"]
+        ]
+        self._references_checked = s["references_checked"]
+        self._verifications_done = s["verifications_done"]
+        self._clarifications_asked = s["clarifications_asked"]
+        self._reinvestigation_used = s["reinvestigation_used"]
+        self._done = s["done"]
+        self._last_clarification = s.get("last_clarification")
+        self._last_reference = s.get("last_reference")
+        self._last_verification = s.get("last_verification")
+        self._last_feedback = s.get("last_feedback", "")
+        return True
+
+    # ------------------------------------------------------------------
+    # reset
+    # ------------------------------------------------------------------
+    def reset(
+        self,
+        task_type: Optional[str] = None,
+        seed: Optional[int] = None,
+        **kwargs,
+    ) -> FleetObservation:
+        if seed is not None:
+            random.seed(seed)
+
+        episode_id = kwargs.get("episode_id") or "fleet-default"
+        FleetResumeEnvironment._default_session = episode_id
+
+        if task_type and task_type in self.dataset:
+            self._task_type = task_type
+        else:
+            self._task_type = random.choice(list(self.dataset.keys()))
+
+        pool = self.dataset[self._task_type]
+        self._current_index = random.randint(0, len(pool) - 1)
+        self._sample = pool[self._current_index]
+
+        # Episode setup
+        self._phase_idx = 0
+        self._phase_steps_used = 0
+        self._total_steps_used = 0
+        self._max_total_steps = sum(PHASE_BUDGETS[self._task_type].values())
+        self._sections_viewed = []
+        self._specialist_reports = []
+        self._references_checked = 0
+        self._verifications_done = 0
+        self._clarifications_asked = 0
+        self._reinvestigation_used = False
+        self._done = False
+        self._last_clarification = None
+        self._last_reference = None
+        self._last_verification = None
+        self._last_feedback = ""
+
+        self._save_state()
+
+        current_phase = PHASES[0]
+        phase_budget = PHASE_BUDGETS[self._task_type][current_phase]
+        return FleetObservation(
+            task_type=self._task_type,
+            current_phase=current_phase,
+            role_instructions=ROLE_INSTRUCTIONS[current_phase],
+            job_description=self._sample["job_description"],
+            visible_sections={},
+            specialist_reports=[],
+            available_actions=self._get_available_actions(),
+            steps_remaining=phase_budget,
+            total_steps_remaining=self._max_total_steps,
+            feedback=(
+                "Fleet episode started. The Fraud Specialist begins investigation. "
+                "Read your role_instructions carefully and use your allotted steps wisely."
+            ),
+            done=False,
+            reward=0.0,
+        )
+
+    # ------------------------------------------------------------------
+    # step
+    # ------------------------------------------------------------------
+    def step(self, action: FleetAction) -> FleetObservation:
+        # Concurrent-session fix: route to correct session via embedded episode_id
+        if action.episode_id:
+            FleetResumeEnvironment._default_session = action.episode_id
+
+        if self._sample is None:
+            self._restore_state()
+
+        if self._done or self._sample is None:
+            return self._terminal_obs(reward=0.0, feedback="Episode already ended.")
+
+        self._phase_steps_used += 1
+        self._total_steps_used += 1
+
+        current_phase = PHASES[self._phase_idx]
+        phase_budget = PHASE_BUDGETS[self._task_type][current_phase]
+        phase_steps_remaining = phase_budget - self._phase_steps_used
+
+        # Dispatch to correct handler
+        if current_phase in ("fraud_specialist", "skills_specialist", "timeline_specialist"):
+            obs = self._handle_specialist_action(action, current_phase, phase_steps_remaining)
+        elif current_phase == "overseer":
+            obs = self._handle_overseer_action(action, phase_steps_remaining)
+        else:
+            obs = self._terminal_obs(reward=0.0, feedback="Unknown phase.")
+
+        self._save_state()
+        return obs
+
+    # ------------------------------------------------------------------
+    # Specialist phase handler
+    # ------------------------------------------------------------------
+    def _handle_specialist_action(
+        self, action: FleetAction, phase: str, phase_steps_remaining: int
+    ) -> FleetObservation:
+        reward = 0.0
+
+        if action.action_type == "view_section":
+            reward = self._do_view_section(action.section or "experience")
+
+        elif action.action_type == "ask_clarification":
+            reward = self._do_ask_clarification(action.question or "")
+
+        elif action.action_type == "check_reference":
+            if phase == "fraud_specialist":
+                reward = self._do_check_reference(action.reference_id or "ref1")
+            else:
+                reward = 0.0  # off-role action, no reward
+
+        elif action.action_type == "verify_credential":
+            if phase == "fraud_specialist":
+                reward = self._do_verify_credential()
+            else:
+                reward = 0.0
+
+        elif action.action_type == "submit_specialist_report":
+            return self._handle_submit_specialist_report(action, phase)
+
+        else:
+            # Wrong action type for this phase
+            reward = 0.0
+
+        # Auto-advance if phase budget exhausted
+        if phase_steps_remaining <= 0:
+            return self._auto_advance_phase(phase, reward)
+
+        total_remaining = self._max_total_steps - self._total_steps_used
+        return FleetObservation(
+            task_type=self._task_type,
+            current_phase=phase,
+            role_instructions=ROLE_INSTRUCTIONS[phase],
+            job_description=self._sample["job_description"],
+            visible_sections=self._get_visible_sections(),
+            specialist_reports=list(self._specialist_reports),
+            available_actions=self._get_available_actions(),
+            clarification_response=self._last_clarification,
+            reference_response=self._last_reference,
+            verification_result=self._last_verification,
+            steps_remaining=phase_steps_remaining,
+            total_steps_remaining=total_remaining,
+            feedback=self._last_feedback,
+            done=False,
+            reward=reward,
+        )
+
+    def _handle_submit_specialist_report(
+        self, action: FleetAction, phase: str
+    ) -> FleetObservation:
+        """Process a specialist submitting their report and advance to next phase."""
+        findings = action.findings or "No specific findings."
+        has_issues = action.has_issues if action.has_issues is not None else False
+        confidence = float(action.specialist_confidence or 0.5)
+        confidence = max(0.0, min(1.0, confidence))
+
+        report = SpecialistReport(
+            specialist_role=phase,
+            findings=findings,
+            has_issues=has_issues,
+            confidence=confidence,
+        )
+        self._specialist_reports.append(report)
+
+        # Reward: specialist accuracy
+        reward = self._score_specialist_report(phase, report)
+
+        # Advance to next phase
+        self._phase_idx += 1
+        self._phase_steps_used = 0
+        self._last_clarification = None
+        self._last_reference = None
+        self._last_verification = None
+
+        if self._phase_idx >= len(PHASES):
+            # Shouldn't happen after specialists, overseer comes next
+            self._done = True
+            return self._terminal_obs(reward=reward, feedback="All phases complete.")
+
+        next_phase = PHASES[self._phase_idx]
+        next_budget = PHASE_BUDGETS[self._task_type][next_phase]
+        total_remaining = self._max_total_steps - self._total_steps_used
+
+        return FleetObservation(
+            task_type=self._task_type,
+            current_phase=next_phase,
+            role_instructions=ROLE_INSTRUCTIONS[next_phase],
+            job_description=self._sample["job_description"],
+            visible_sections=self._get_visible_sections(),
+            specialist_reports=list(self._specialist_reports),
+            available_actions=self._get_available_actions(),
+            steps_remaining=next_budget,
+            total_steps_remaining=total_remaining,
+            feedback=(
+                f"{phase.replace('_', ' ').title()} report submitted (reward: {reward:.3f}). "
+                f"Advancing to {next_phase.replace('_', ' ').title()} phase."
+            ),
+            done=False,
+            reward=reward,
+        )
+
+    # ------------------------------------------------------------------
+    # Overseer phase handler
+    # ------------------------------------------------------------------
+    def _handle_overseer_action(
+        self, action: FleetAction, phase_steps_remaining: int
+    ) -> FleetObservation:
+        reward = 0.0
+
+        if action.action_type == "request_reinvestigation":
+            if not self._reinvestigation_used:
+                self._reinvestigation_used = True
+                target = action.reinvestigation_target or "fraud_specialist"
+                reason = action.reinvestigation_reason or "Need more information."
+                self._last_feedback = (
+                    f"Reinvestigation requested for {target}: {reason}. "
+                    f"Note: specialist reports are already finalized; use this context for your final decision."
+                )
+                reward = 0.02  # small reward for oversight engagement
+            else:
+                self._last_feedback = "Reinvestigation already used. Please submit your final decision."
+                reward = 0.0
+
+            if phase_steps_remaining <= 0:
+                return self._auto_timeout_overseer()
+
+            total_remaining = self._max_total_steps - self._total_steps_used
+            return FleetObservation(
+                task_type=self._task_type,
+                current_phase="overseer",
+                role_instructions=ROLE_INSTRUCTIONS["overseer"],
+                job_description=self._sample["job_description"],
+                visible_sections=self._get_visible_sections(),
+                specialist_reports=list(self._specialist_reports),
+                available_actions=["submit_final_decision"],
+                steps_remaining=phase_steps_remaining,
+                total_steps_remaining=total_remaining,
+                feedback=self._last_feedback,
+                done=False,
+                reward=reward,
+            )
+
+        elif action.action_type == "submit_final_decision":
+            return self._handle_submit_final_decision(action)
+
+        else:
+            total_remaining = self._max_total_steps - self._total_steps_used
+            return FleetObservation(
+                task_type=self._task_type,
+                current_phase="overseer",
+                role_instructions=ROLE_INSTRUCTIONS["overseer"],
+                job_description=self._sample["job_description"],
+                visible_sections=self._get_visible_sections(),
+                specialist_reports=list(self._specialist_reports),
+                available_actions=self._get_available_actions(),
+                steps_remaining=phase_steps_remaining,
+                total_steps_remaining=total_remaining,
+                feedback="Overseer can only use request_reinvestigation or submit_final_decision.",
+                done=False,
+                reward=0.0,
+            )
+
+    def _handle_submit_final_decision(self, action: FleetAction) -> FleetObservation:
+        self._done = True
+        gt = self._sample["ground_truth"]
+
+        decision = (action.decision or "reject").lower()
+        fraud_flag = action.fraud_flag if action.fraud_flag is not None else False
+        confidence = float(action.confidence or 0.5)
+        confidence = max(0.0, min(1.0, confidence))
+        fraud_reasoning = action.fraud_reasoning or ""
+
+        reward = 0.0
+
+        # === Overseer decision rewards (sum to 0.70) ===
+        # Correct hiring decision: +0.35
+        if decision == gt["decision"]:
+            reward += 0.35
+
+        # Correct fraud detection: +0.25
+        if fraud_flag == gt["is_fraud"]:
+            reward += 0.25
+
+        # Calibrated confidence when both correct: up to +0.10
+        both_correct = (decision == gt["decision"] and fraud_flag == gt["is_fraud"])
+        if both_correct:
+            reward += round(0.10 * confidence, 4)
+
+        # === Specialist quality bonus (sum to 0.20) ===
+        # Reward proportional to how many specialists were correct
+        specialist_bonus = 0.0
+        for report in self._specialist_reports:
+            phase_correct = self._specialist_was_correct(report)
+            if phase_correct:
+                specialist_bonus += round(0.20 / 3, 4)   # 0.0667 per correct specialist
+        reward += specialist_bonus
+
+        # === Oversight quality bonus (up to 0.05) ===
+        # Reward for using reinvestigation appropriately
+        if self._reinvestigation_used and gt["is_fraud"]:
+            reward += 0.05   # used oversight appropriately for a fraud case
+        elif not self._reinvestigation_used and not gt["is_fraud"]:
+            reward += 0.03   # efficient: didn't waste reinvestigation on clean resume
+
+        # === Investigation depth bonus (continuous, up to 0.05) ===
+        # Rewards thorough investigation across all phases
+        n_sections = len(set(self._sections_viewed))
+        max_sections = len(self._sample.get("resume_sections", {}) or {})
+        depth_ratio = n_sections / max_sections if max_sections > 0 else 0.0
+        tool_count = self._references_checked + self._verifications_done + self._clarifications_asked
+        tool_ratio = min(tool_count / 3.0, 1.0)
+        depth_score = (depth_ratio * 0.6 + tool_ratio * 0.4)
+        reward += round(0.05 * depth_score, 4)
+
+        # === Fraud reasoning quality (up to 0.05) ===
+        fraud_indicators = gt.get("fraud_indicators", [])
+        if fraud_indicators and fraud_reasoning:
+            reasoning_lower = fraud_reasoning.lower()
+            matched = sum(1 for ind in fraud_indicators if ind.replace("_", " ") in reasoning_lower)
+            reward += round(0.05 * (matched / len(fraud_indicators)), 4)
+        elif not fraud_indicators and not fraud_flag:
+            # Correctly identified non-fraud
+            reward += 0.02
+
+        final_reward = max(0.0, min(1.0, reward))
+        return FleetObservation(
+            task_type=self._task_type,
+            current_phase="complete",
+            role_instructions="",
+            job_description=self._sample["job_description"],
+            visible_sections=self._get_visible_sections(),
+            specialist_reports=list(self._specialist_reports),
+            available_actions=[],
+            steps_remaining=0,
+            total_steps_remaining=0,
+            feedback=f"Fleet decision submitted. Episode complete. Final reward: {final_reward:.3f}",
+            done=True,
+            reward=final_reward,
+        )
+
+    # ------------------------------------------------------------------
+    # Investigation helpers (shared across specialist phases)
+    # ------------------------------------------------------------------
+    def _do_view_section(self, section: str) -> float:
+        section = section.lower().strip()
+        if section not in VALID_SECTIONS:
+            self._last_feedback = f"Invalid section '{section}'."
+            return 0.0
+        if section in self._sections_viewed:
+            self._last_feedback = f"Section '{section}' already viewed."
+            return 0.0
+        self._sections_viewed.append(section)
+        tier_mult = {"easy": 1.0, "medium": 1.2, "hard": 1.5}.get(self._task_type, 1.0)
+        base = 0.03 if section in HIGH_VALUE_SECTIONS else 0.01
+        reward = round(base * tier_mult, 4)
+        self._last_feedback = f"Revealed section: {section}"
+        return reward
+
+    def _do_ask_clarification(self, question: str) -> float:
+        self._clarifications_asked += 1
+        question_lower = question.lower().strip()
+        answers = self._sample.get("clarification_answers", {})
+        best_key, best_score = None, 0
+        for key in answers:
+            overlap = len(set(key.replace("_", " ").lower().split()) & set(question_lower.split()))
+            if overlap > best_score:
+                best_score, best_key = overlap, key
+        tier_mult = {"easy": 1.0, "medium": 1.2, "hard": 1.5}.get(self._task_type, 1.0)
+        if best_key and best_score > 0:
+            self._last_clarification = answers[best_key]
+            reward = round(0.03 * tier_mult, 4)
+        else:
+            self._last_clarification = "No specific information available for that question."
+            reward = round(0.01 * tier_mult, 4)
+        self._last_feedback = "Clarification received."
+        return reward
+
+    def _do_check_reference(self, ref_id: str) -> float:
+        self._references_checked += 1
+        refs = self._sample.get("reference_check_results", {})
+        ref_id = ref_id.lower().strip()
+        if ref_id in refs:
+            rd = refs[ref_id]
+            self._last_reference = f"{rd['name']}: {rd['response']}"
+        else:
+            available = list(refs.keys())
+            if available:
+                rd = refs[available[0]]
+                self._last_reference = f"{rd['name']}: {rd['response']}"
+            else:
+                self._last_reference = "No references available."
+        is_fraud = self._sample["ground_truth"].get("is_fraud", False)
+        reward = 0.05 if is_fraud else 0.02
+        self._last_feedback = "Reference check completed."
+        return reward
+
+    def _do_verify_credential(self) -> float:
+        self._verifications_done += 1
+        verification = self._sample.get("verification_data", {})
+        parts = [
+            f"{k.replace('_', ' ').title()}: {'VERIFIED' if v else 'FAILED'}"
+            for k, v in verification.items()
+        ]
+        self._last_verification = "; ".join(parts) if parts else "No verification data."
+        has_failed = any(not v for v in verification.values())
+        reward = 0.05 if has_failed else 0.02
+        self._last_feedback = "Credential verification completed."
+        return reward
+
+    # ------------------------------------------------------------------
+    # Scoring helpers
+    # ------------------------------------------------------------------
+    def _score_specialist_report(self, phase: str, report: SpecialistReport) -> float:
+        """Award reward for a useful specialist report."""
+        gt = self._sample["ground_truth"]
+        reward = 0.0
+
+        if phase == "fraud_specialist":
+            # Correct fraud signal: specialist flagged issues when fraud exists and vice versa
+            correct_signal = (report.has_issues == gt["is_fraud"])
+            reward += 0.06 if correct_signal else 0.01
+            # Bonus for high confidence when correct
+            if correct_signal:
+                reward += round(0.04 * report.confidence, 4)
+
+        elif phase == "skills_specialist":
+            # Correct match signal: flag issues only when decision is reject
+            expected_issues = (gt["decision"] == "reject")
+            correct_signal = (report.has_issues == expected_issues)
+            reward += 0.05 if correct_signal else 0.01
+            if correct_signal:
+                reward += round(0.03 * report.confidence, 4)
+
+        elif phase == "timeline_specialist":
+            # Similar to skills: flag issues if fraud or reject
+            expected_issues = gt["is_fraud"] or (gt["decision"] == "reject")
+            correct_signal = (report.has_issues == expected_issues)
+            reward += 0.05 if correct_signal else 0.01
+            if correct_signal:
+                reward += round(0.03 * report.confidence, 4)
+
+        return round(min(reward, 0.10), 4)
+
+    def _specialist_was_correct(self, report: SpecialistReport) -> bool:
+        """Check if a specialist's has_issues flag was accurate."""
+        gt = self._sample["ground_truth"]
+        phase = report.specialist_role
+        if phase == "fraud_specialist":
+            return report.has_issues == gt["is_fraud"]
+        elif phase == "skills_specialist":
+            return report.has_issues == (gt["decision"] == "reject")
+        elif phase == "timeline_specialist":
+            return report.has_issues == (gt["is_fraud"] or gt["decision"] == "reject")
+        return False
+
+    # ------------------------------------------------------------------
+    # Available actions per phase
+    # ------------------------------------------------------------------
+    def _get_available_actions(self) -> List[str]:
+        if self._phase_idx >= len(PHASES):
+            return []
+        phase = PHASES[self._phase_idx]
+
+        if phase == "fraud_specialist":
+            actions = []
+            all_sections = set(self._sample["resume_sections"].keys()) if self._sample else set()
+            if all_sections - set(self._sections_viewed):
+                actions.append("view_section")
+            if self._references_checked == 0:
+                actions.append("check_reference")
+            if self._verifications_done == 0:
+                actions.append("verify_credential")
+            actions.append("submit_specialist_report")
+            return actions
+
+        elif phase in ("skills_specialist", "timeline_specialist"):
+            actions = []
+            all_sections = set(self._sample["resume_sections"].keys()) if self._sample else set()
+            if all_sections - set(self._sections_viewed):
+                actions.append("view_section")
+            actions.append("ask_clarification")
+            actions.append("submit_specialist_report")
+            return actions
+
+        elif phase == "overseer":
+            actions = []
+            if not self._reinvestigation_used:
+                actions.append("request_reinvestigation")
+            actions.append("submit_final_decision")
+            return actions
+
+        return []
+
+    # ------------------------------------------------------------------
+    # Observation helpers
+    # ------------------------------------------------------------------
+    def _get_visible_sections(self) -> Dict[str, str]:
+        if not self._sample:
+            return {}
+        sections = self._sample["resume_sections"]
+        return {s: sections[s] for s in self._sections_viewed if s in sections}
+
+    def _terminal_obs(self, reward: float, feedback: str) -> FleetObservation:
+        return FleetObservation(
+            task_type=self._task_type,
+            current_phase="complete",
+            role_instructions="",
+            job_description=self._sample.get("job_description", "") if self._sample else "",
+            visible_sections=self._get_visible_sections(),
+            specialist_reports=list(self._specialist_reports),
+            available_actions=[],
+            steps_remaining=0,
+            total_steps_remaining=0,
+            feedback=feedback,
+            done=True,
+            reward=reward,
+        )
+
+    def _auto_advance_phase(self, phase: str, accumulated_reward: float) -> FleetObservation:
+        """Auto-submit report when phase budget runs out without explicit report."""
+        # Create a minimal auto-report
+        report = SpecialistReport(
+            specialist_role=phase,
+            findings="[Auto-submitted: phase budget exhausted without explicit report]",
+            has_issues=False,
+            confidence=0.3,
+        )
+        self._specialist_reports.append(report)
+        self._phase_idx += 1
+        self._phase_steps_used = 0
+        self._last_clarification = None
+        self._last_reference = None
+        self._last_verification = None
+
+        if self._phase_idx >= len(PHASES):
+            self._done = True
+            return self._terminal_obs(
+                reward=accumulated_reward,
+                feedback="Phase budget exhausted. Episode ended."
+            )
+
+        next_phase = PHASES[self._phase_idx]
+        next_budget = PHASE_BUDGETS[self._task_type][next_phase]
+        total_remaining = self._max_total_steps - self._total_steps_used
+
+        return FleetObservation(
+            task_type=self._task_type,
+            current_phase=next_phase,
+            role_instructions=ROLE_INSTRUCTIONS[next_phase],
+            job_description=self._sample["job_description"],
+            visible_sections=self._get_visible_sections(),
+            specialist_reports=list(self._specialist_reports),
+            available_actions=self._get_available_actions(),
+            steps_remaining=next_budget,
+            total_steps_remaining=total_remaining,
+            feedback=f"Phase budget for {phase} exhausted. Auto-advanced to {next_phase}.",
+            done=False,
+            reward=accumulated_reward,
+        )
+
+    def _auto_timeout_overseer(self) -> FleetObservation:
+        self._done = True
+        return FleetObservation(
+            task_type=self._task_type,
+            current_phase="complete",
+            role_instructions="",
+            job_description=self._sample["job_description"],
+            visible_sections=self._get_visible_sections(),
+            specialist_reports=list(self._specialist_reports),
+            available_actions=[],
+            steps_remaining=0,
+            total_steps_remaining=0,
+            feedback="Overseer step budget exhausted. Episode ended with partial reward.",
+            done=True,
+            reward=0.0,
+        )
+
+    @property
+    def state(self) -> FleetState:
+        return FleetState(
+            current_index=self._current_index,
+            task_type=self._task_type,
+            phase_idx=self._phase_idx,
+            phase_steps_used=self._phase_steps_used,
+            total_steps_used=self._total_steps_used,
+            max_total_steps=self._max_total_steps,
+            sections_viewed=list(self._sections_viewed),
+            specialist_reports=[r.model_dump() for r in self._specialist_reports],
+            references_checked=self._references_checked,
+            verifications_done=self._verifications_done,
+            clarifications_asked=self._clarifications_asked,
+            reinvestigation_used=self._reinvestigation_used,
+            done=self._done,
+        )
