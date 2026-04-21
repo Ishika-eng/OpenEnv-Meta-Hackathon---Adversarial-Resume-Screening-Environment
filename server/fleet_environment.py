@@ -30,6 +30,14 @@ from openenv.core.env_server import Environment
 from models import (
     FleetObservation, FleetAction, FleetState, SpecialistReport
 )
+try:
+    from server.specialist_env import (
+        SPECIALIST_CONFIGS, SpecialistActionValidator, compute_violation_penalty,
+    )
+except ModuleNotFoundError:
+    from specialist_env import (   # relative import when run inside server/
+        SPECIALIST_CONFIGS, SpecialistActionValidator, compute_violation_penalty,
+    )
 
 
 VALID_SECTIONS = ["header", "summary", "experience", "education", "skills", "projects", "references"]
@@ -140,6 +148,7 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         self._verifications_done: int = 0
         self._clarifications_asked: int = 0
         self._reinvestigation_used: bool = False
+        self._violations_count: int = 0          # Day 2: out-of-role action counter
         self._done: bool = False
         # Per-step response caches (instance, persisted in episode store)
         self._last_clarification: Optional[str] = None
@@ -168,6 +177,7 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
             "verifications_done": self._verifications_done,
             "clarifications_asked": self._clarifications_asked,
             "reinvestigation_used": self._reinvestigation_used,
+            "violations_count": self._violations_count,
             "done": self._done,
             "last_clarification": self._last_clarification,
             "last_reference": self._last_reference,
@@ -195,6 +205,7 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         self._verifications_done = s["verifications_done"]
         self._clarifications_asked = s["clarifications_asked"]
         self._reinvestigation_used = s["reinvestigation_used"]
+        self._violations_count = s.get("violations_count", 0)
         self._done = s["done"]
         self._last_clarification = s.get("last_clarification")
         self._last_reference = s.get("last_reference")
@@ -237,6 +248,7 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         self._verifications_done = 0
         self._clarifications_asked = 0
         self._reinvestigation_used = False
+        self._violations_count = 0
         self._done = False
         self._last_clarification = None
         self._last_reference = None
@@ -298,39 +310,59 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         return obs
 
     # ------------------------------------------------------------------
-    # Specialist phase handler
+    # Specialist phase handler  (Day 2: hard whitelist enforcement)
     # ------------------------------------------------------------------
     def _handle_specialist_action(
         self, action: FleetAction, phase: str, phase_steps_remaining: int
     ) -> FleetObservation:
+        config = SPECIALIST_CONFIGS[phase]
+        validator = SpecialistActionValidator(config)
+
+        # ── HARD VALIDATION ────────────────────────────────────────────
+        valid, reason = validator.validate(action)
+        if not valid:
+            self._violations_count += 1
+            self._last_feedback = reason
+            total_remaining = self._max_total_steps - self._total_steps_used
+
+            # Budget may have run out even on a violation step
+            if phase_steps_remaining <= 0:
+                return self._auto_advance_phase(phase, 0.0)
+
+            return FleetObservation(
+                task_type=self._task_type,
+                current_phase=phase,
+                role_instructions=validator.role_instructions(),
+                job_description=self._sample["job_description"],
+                visible_sections=validator.filter_sections(self._get_visible_sections()),
+                specialist_reports=list(self._specialist_reports),
+                available_actions=validator.available_actions(
+                    self._sections_viewed,
+                    self._references_checked,
+                    self._verifications_done,
+                ),
+                steps_remaining=phase_steps_remaining,
+                total_steps_remaining=total_remaining,
+                violations_count=self._violations_count,
+                feedback=reason,
+                done=False,
+                reward=0.0,
+            )
+
+        # ── VALID ACTION — dispatch ─────────────────────────────────────
         reward = 0.0
-
-        if action.action_type == "view_section":
+        if action.action_type == "submit_specialist_report":
+            return self._handle_submit_specialist_report(action, phase)
+        elif action.action_type == "view_section":
             reward = self._do_view_section(action.section or "experience")
-
         elif action.action_type == "ask_clarification":
             reward = self._do_ask_clarification(action.question or "")
-
         elif action.action_type == "check_reference":
-            if phase == "fraud_specialist":
-                reward = self._do_check_reference(action.reference_id or "ref1")
-            else:
-                reward = 0.0  # off-role action, no reward
-
+            reward = self._do_check_reference(action.reference_id or "ref1")
         elif action.action_type == "verify_credential":
-            if phase == "fraud_specialist":
-                reward = self._do_verify_credential()
-            else:
-                reward = 0.0
+            reward = self._do_verify_credential()
 
-        elif action.action_type == "submit_specialist_report":
-            return self._handle_submit_specialist_report(action, phase)
-
-        else:
-            # Wrong action type for this phase
-            reward = 0.0
-
-        # Auto-advance if phase budget exhausted
+        # ── AUTO-ADVANCE if phase budget exhausted ──────────────────────
         if phase_steps_remaining <= 0:
             return self._auto_advance_phase(phase, reward)
 
@@ -338,16 +370,22 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         return FleetObservation(
             task_type=self._task_type,
             current_phase=phase,
-            role_instructions=ROLE_INSTRUCTIONS[phase],
+            role_instructions=validator.role_instructions(),
             job_description=self._sample["job_description"],
-            visible_sections=self._get_visible_sections(),
+            # ── Role-filtered observation (Day 2 key feature) ──────────
+            visible_sections=validator.filter_sections(self._get_visible_sections()),
             specialist_reports=list(self._specialist_reports),
-            available_actions=self._get_available_actions(),
+            available_actions=validator.available_actions(
+                self._sections_viewed,
+                self._references_checked,
+                self._verifications_done,
+            ),
             clarification_response=self._last_clarification,
             reference_response=self._last_reference,
             verification_result=self._last_verification,
             steps_remaining=phase_steps_remaining,
             total_steps_remaining=total_remaining,
+            violations_count=self._violations_count,
             feedback=self._last_feedback,
             done=False,
             reward=reward,
@@ -389,16 +427,25 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         next_budget = PHASE_BUDGETS[self._task_type][next_phase]
         total_remaining = self._max_total_steps - self._total_steps_used
 
+        # Build validator for the NEXT phase (so available_actions + role_instructions
+        # are already correct for the incoming agent)
+        next_validator = SpecialistActionValidator(SPECIALIST_CONFIGS[next_phase])
         return FleetObservation(
             task_type=self._task_type,
             current_phase=next_phase,
-            role_instructions=ROLE_INSTRUCTIONS[next_phase],
+            role_instructions=next_validator.role_instructions(),
             job_description=self._sample["job_description"],
-            visible_sections=self._get_visible_sections(),
+            visible_sections=next_validator.filter_sections(self._get_visible_sections()),
             specialist_reports=list(self._specialist_reports),
-            available_actions=self._get_available_actions(),
+            available_actions=next_validator.available_actions(
+                self._sections_viewed,
+                self._references_checked,
+                self._verifications_done,
+                self._reinvestigation_used,
+            ),
             steps_remaining=next_budget,
             total_steps_remaining=total_remaining,
+            violations_count=self._violations_count,
             feedback=(
                 f"{phase.replace('_', ' ').title()} report submitted (reward: {reward:.3f}). "
                 f"Advancing to {next_phase.replace('_', ' ').title()} phase."
@@ -413,36 +460,63 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
     def _handle_overseer_action(
         self, action: FleetAction, phase_steps_remaining: int
     ) -> FleetObservation:
-        reward = 0.0
+        overseer_config = SPECIALIST_CONFIGS["overseer"]
+        validator = SpecialistActionValidator(overseer_config)
+        total_remaining = self._max_total_steps - self._total_steps_used
 
+        # Hard validation for overseer too
+        valid, reason = validator.validate(action)
+        if not valid:
+            self._violations_count += 1
+            if phase_steps_remaining <= 0:
+                return self._auto_timeout_overseer()
+            return FleetObservation(
+                task_type=self._task_type,
+                current_phase="overseer",
+                role_instructions=validator.role_instructions(),
+                job_description=self._sample["job_description"],
+                visible_sections=validator.filter_sections(self._get_visible_sections()),
+                specialist_reports=list(self._specialist_reports),
+                available_actions=validator.available_actions(
+                    self._sections_viewed, self._references_checked,
+                    self._verifications_done, self._reinvestigation_used,
+                ),
+                steps_remaining=phase_steps_remaining,
+                total_steps_remaining=total_remaining,
+                violations_count=self._violations_count,
+                feedback=reason,
+                done=False,
+                reward=0.0,
+            )
+
+        reward = 0.0
         if action.action_type == "request_reinvestigation":
             if not self._reinvestigation_used:
                 self._reinvestigation_used = True
                 target = action.reinvestigation_target or "fraud_specialist"
-                reason = action.reinvestigation_reason or "Need more information."
+                reinvest_reason = action.reinvestigation_reason or "Need more information."
                 self._last_feedback = (
-                    f"Reinvestigation requested for {target}: {reason}. "
-                    f"Note: specialist reports are already finalized; use this context for your final decision."
+                    f"Reinvestigation requested for {target}: {reinvest_reason}. "
+                    f"Specialist reports are finalized — use this for your final decision."
                 )
-                reward = 0.02  # small reward for oversight engagement
+                reward = 0.02
             else:
-                self._last_feedback = "Reinvestigation already used. Please submit your final decision."
-                reward = 0.0
+                self._last_feedback = "Reinvestigation already used. Submit your final decision."
 
             if phase_steps_remaining <= 0:
                 return self._auto_timeout_overseer()
 
-            total_remaining = self._max_total_steps - self._total_steps_used
             return FleetObservation(
                 task_type=self._task_type,
                 current_phase="overseer",
-                role_instructions=ROLE_INSTRUCTIONS["overseer"],
+                role_instructions=validator.role_instructions(),
                 job_description=self._sample["job_description"],
-                visible_sections=self._get_visible_sections(),
+                visible_sections=validator.filter_sections(self._get_visible_sections()),
                 specialist_reports=list(self._specialist_reports),
                 available_actions=["submit_final_decision"],
                 steps_remaining=phase_steps_remaining,
                 total_steps_remaining=total_remaining,
+                violations_count=self._violations_count,
                 feedback=self._last_feedback,
                 done=False,
                 reward=reward,
@@ -450,23 +524,6 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
 
         elif action.action_type == "submit_final_decision":
             return self._handle_submit_final_decision(action)
-
-        else:
-            total_remaining = self._max_total_steps - self._total_steps_used
-            return FleetObservation(
-                task_type=self._task_type,
-                current_phase="overseer",
-                role_instructions=ROLE_INSTRUCTIONS["overseer"],
-                job_description=self._sample["job_description"],
-                visible_sections=self._get_visible_sections(),
-                specialist_reports=list(self._specialist_reports),
-                available_actions=self._get_available_actions(),
-                steps_remaining=phase_steps_remaining,
-                total_steps_remaining=total_remaining,
-                feedback="Overseer can only use request_reinvestigation or submit_final_decision.",
-                done=False,
-                reward=0.0,
-            )
 
     def _handle_submit_final_decision(self, action: FleetAction) -> FleetObservation:
         self._done = True
@@ -530,7 +587,16 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
             # Correctly identified non-fraud
             reward += 0.02
 
+        # === Day 2: Violation penalty ===
+        # Each out-of-role action costs 0.05, capped at 0.25 deduction
+        violation_penalty = compute_violation_penalty(self._violations_count)
+        reward = max(0.0, reward - violation_penalty)
+
         final_reward = max(0.0, min(1.0, reward))
+        violation_note = (
+            f" Violations: {self._violations_count} (penalty: -{violation_penalty:.2f})."
+            if self._violations_count > 0 else ""
+        )
         return FleetObservation(
             task_type=self._task_type,
             current_phase="complete",
@@ -541,7 +607,8 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
             available_actions=[],
             steps_remaining=0,
             total_steps_remaining=0,
-            feedback=f"Fleet decision submitted. Episode complete. Final reward: {final_reward:.3f}",
+            violations_count=self._violations_count,
+            feedback=f"Fleet decision submitted. Episode complete. Final reward: {final_reward:.3f}.{violation_note}",
             done=True,
             reward=final_reward,
         )
@@ -662,42 +729,22 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         return False
 
     # ------------------------------------------------------------------
-    # Available actions per phase
+    # Available actions per phase  (Day 2: delegate to SpecialistActionValidator)
     # ------------------------------------------------------------------
     def _get_available_actions(self) -> List[str]:
         if self._phase_idx >= len(PHASES):
             return []
         phase = PHASES[self._phase_idx]
-
-        if phase == "fraud_specialist":
-            actions = []
-            all_sections = set(self._sample["resume_sections"].keys()) if self._sample else set()
-            if all_sections - set(self._sections_viewed):
-                actions.append("view_section")
-            if self._references_checked == 0:
-                actions.append("check_reference")
-            if self._verifications_done == 0:
-                actions.append("verify_credential")
-            actions.append("submit_specialist_report")
-            return actions
-
-        elif phase in ("skills_specialist", "timeline_specialist"):
-            actions = []
-            all_sections = set(self._sample["resume_sections"].keys()) if self._sample else set()
-            if all_sections - set(self._sections_viewed):
-                actions.append("view_section")
-            actions.append("ask_clarification")
-            actions.append("submit_specialist_report")
-            return actions
-
-        elif phase == "overseer":
-            actions = []
-            if not self._reinvestigation_used:
-                actions.append("request_reinvestigation")
-            actions.append("submit_final_decision")
-            return actions
-
-        return []
+        config = SPECIALIST_CONFIGS.get(phase)
+        if config is None:
+            return []
+        validator = SpecialistActionValidator(config)
+        return validator.available_actions(
+            self._sections_viewed,
+            self._references_checked,
+            self._verifications_done,
+            self._reinvestigation_used,
+        )
 
     # ------------------------------------------------------------------
     # Observation helpers
@@ -719,6 +766,7 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
             available_actions=[],
             steps_remaining=0,
             total_steps_remaining=0,
+            violations_count=self._violations_count,
             feedback=feedback,
             done=True,
             reward=reward,
@@ -726,7 +774,6 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
 
     def _auto_advance_phase(self, phase: str, accumulated_reward: float) -> FleetObservation:
         """Auto-submit report when phase budget runs out without explicit report."""
-        # Create a minimal auto-report
         report = SpecialistReport(
             specialist_role=phase,
             findings="[Auto-submitted: phase budget exhausted without explicit report]",
@@ -750,17 +797,22 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         next_phase = PHASES[self._phase_idx]
         next_budget = PHASE_BUDGETS[self._task_type][next_phase]
         total_remaining = self._max_total_steps - self._total_steps_used
+        next_validator = SpecialistActionValidator(SPECIALIST_CONFIGS[next_phase])
 
         return FleetObservation(
             task_type=self._task_type,
             current_phase=next_phase,
-            role_instructions=ROLE_INSTRUCTIONS[next_phase],
+            role_instructions=next_validator.role_instructions(),
             job_description=self._sample["job_description"],
-            visible_sections=self._get_visible_sections(),
+            visible_sections=next_validator.filter_sections(self._get_visible_sections()),
             specialist_reports=list(self._specialist_reports),
-            available_actions=self._get_available_actions(),
+            available_actions=next_validator.available_actions(
+                self._sections_viewed, self._references_checked,
+                self._verifications_done, self._reinvestigation_used,
+            ),
             steps_remaining=next_budget,
             total_steps_remaining=total_remaining,
+            violations_count=self._violations_count,
             feedback=f"Phase budget for {phase} exhausted. Auto-advanced to {next_phase}.",
             done=False,
             reward=accumulated_reward,
@@ -778,6 +830,7 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
             available_actions=[],
             steps_remaining=0,
             total_steps_remaining=0,
+            violations_count=self._violations_count,
             feedback="Overseer step budget exhausted. Episode ended with partial reward.",
             done=True,
             reward=0.0,
@@ -798,5 +851,6 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
             verifications_done=self._verifications_done,
             clarifications_asked=self._clarifications_asked,
             reinvestigation_used=self._reinvestigation_used,
+            violations_count=self._violations_count,
             done=self._done,
         )
