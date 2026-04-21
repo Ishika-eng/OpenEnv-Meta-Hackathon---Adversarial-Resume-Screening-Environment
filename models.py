@@ -191,6 +191,9 @@ class FleetObservation(Observation):
     total_steps_remaining: int = Field(
         0, description="Total steps remaining across all phases."
     )
+    violations_count: int = Field(
+        0, description="Number of out-of-role action violations this episode. Each costs 0.05 from final reward."
+    )
     feedback: Optional[str] = Field(
         None, description="Environment feedback for the current agent."
     )
@@ -283,6 +286,7 @@ class FleetState(State):
     verifications_done: int = Field(0)
     clarifications_asked: int = Field(0)
     reinvestigation_used: bool = Field(False, description="Whether overseer requested reinvestigation.")
+    violations_count: int = Field(0, description="Out-of-role action violations this episode.")
     done: bool = Field(False)
 
 
