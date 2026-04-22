@@ -162,16 +162,31 @@ SYSTEM_PROMPTS = {
 
     "overseer": textwrap.dedent("""\
     You are the OVERSEER on a hiring review board. You receive reports from three specialist agents
-    and make the final hiring decision.
+    and must synthesise them into a final hiring decision.
 
     Available actions (output EXACTLY one JSON per turn):
-    1. {"action_type":"request_reinvestigation","reinvestigation_target":"fraud_specialist|skills_specialist|timeline_specialist","reinvestigation_reason":"<why>"}
-    2. {"action_type":"submit_final_decision","decision":"accept|reject","fraud_flag":true|false,"confidence":0.0-1.0,"fraud_reasoning":"<explanation if fraud>"}
+    1. {"action_type":"read_reports","report_target":"fraud_specialist"}
+       {"action_type":"read_reports","report_target":"skills_specialist"}
+       {"action_type":"read_reports","report_target":"timeline_specialist"}
+    2. {"action_type":"request_reinvestigation","reinvestigation_target":"fraud_specialist|skills_specialist|timeline_specialist","reinvestigation_reason":"<why>"}
+    3. {"action_type":"submit_final_decision","decision":"accept|reject","fraud_flag":true|false,"confidence":0.0-1.0,"fraud_reasoning":"<explanation if fraud>"}
 
-    STRATEGY:
-    - If specialist reports conflict or a fraud specialist flagged issues, consider request_reinvestigation (allowed once).
-    - Otherwise, synthesise the reports and submit_final_decision immediately.
-    - High confidence (0.8+) when all specialists agree. Lower confidence when reports conflict.
+    RECOMMENDED WORKFLOW:
+    Step 1 — Read each specialist report using read_reports (set report_target).
+             Reading ALL three earns a thoroughness bonus. Check read_report_details in the observation.
+    Step 2 — (Optional, ONCE) Use request_reinvestigation if reports conflict.
+    Step 3 — Submit verdict with submit_final_decision.
+             - decision: "accept" or "reject"
+             - fraud_flag: true if fraud detected (must match fraud_specialist findings)
+             - confidence: 0.8+ when specialists agree, 0.5-0.7 when conflicted
+             - fraud_reasoning: REQUIRED if fraud_flag is true, cite specific indicators
+
+    DECISION RULES:
+    - If fraud_specialist flagged issues → reject + fraud_flag=true
+    - If skills_specialist OR timeline_specialist flagged issues → reject
+    - If all specialists say no issues → accept + fraud_flag=false
+    - When in doubt: reject (false negatives are less costly than hiring a fraudster)
+
     IMPORTANT: When steps_remaining <= 1, you MUST call submit_final_decision immediately.
     Respond with ONLY valid JSON, no other text.
     """),
@@ -182,10 +197,31 @@ SYSTEM_PROMPTS = {
 }
 
 FALLBACK_ACTIONS = {
-    "fraud_specialist": {"action_type": "submit_specialist_report", "findings": "Unable to complete investigation.", "has_issues": False, "specialist_confidence": 0.3},
-    "skills_specialist": {"action_type": "submit_specialist_report", "findings": "Unable to complete skills assessment.", "has_issues": False, "specialist_confidence": 0.3},
-    "timeline_specialist": {"action_type": "submit_specialist_report", "findings": "Unable to complete timeline review.", "has_issues": False, "specialist_confidence": 0.3},
-    "overseer": {"action_type": "submit_final_decision", "decision": "reject", "fraud_flag": False, "confidence": 0.4, "fraud_reasoning": ""},
+    "fraud_specialist": {
+        "action_type": "submit_specialist_report",
+        "findings": "Unable to complete investigation within step budget.",
+        "has_issues": False,
+        "specialist_confidence": 0.3,
+    },
+    "skills_specialist": {
+        "action_type": "submit_specialist_report",
+        "findings": "Unable to complete skills assessment within step budget.",
+        "has_issues": False,
+        "specialist_confidence": 0.3,
+    },
+    "timeline_specialist": {
+        "action_type": "submit_specialist_report",
+        "findings": "Unable to complete timeline review within step budget.",
+        "has_issues": False,
+        "specialist_confidence": 0.3,
+    },
+    "overseer": {
+        "action_type": "submit_final_decision",
+        "decision": "reject",
+        "fraud_flag": False,
+        "confidence": 0.4,
+        "fraud_reasoning": "",
+    },
 }
 
 
@@ -223,20 +259,24 @@ class FleetHTTPClient:
     def _parse(data: dict, fallback_task: str = "easy") -> dict:
         obs = data.get("observation", data)
         return {
-            "task_type": obs.get("task_type", fallback_task),
-            "current_phase": obs.get("current_phase", "fraud_specialist"),
-            "role_instructions": obs.get("role_instructions", ""),
-            "job_description": obs.get("job_description", ""),
-            "visible_sections": obs.get("visible_sections", {}),
-            "specialist_reports": obs.get("specialist_reports", []),
-            "available_actions": obs.get("available_actions", []),
+            "task_type":              obs.get("task_type", fallback_task),
+            "current_phase":          obs.get("current_phase", "fraud_specialist"),
+            "role_instructions":      obs.get("role_instructions", ""),
+            "job_description":        obs.get("job_description", ""),
+            "visible_sections":       obs.get("visible_sections", {}),
+            "specialist_reports":     obs.get("specialist_reports", []),
+            "available_actions":      obs.get("available_actions", []),
             "clarification_response": obs.get("clarification_response"),
-            "reference_response": obs.get("reference_response"),
-            "verification_result": obs.get("verification_result"),
-            "steps_remaining": obs.get("steps_remaining", 0),
-            "total_steps_remaining": obs.get("total_steps_remaining", 0),
-            "feedback": obs.get("feedback", ""),
-            "done": data.get("done", obs.get("done", False)),
+            "reference_response":     obs.get("reference_response"),
+            "verification_result":    obs.get("verification_result"),
+            "steps_remaining":        obs.get("steps_remaining", 0),
+            "total_steps_remaining":  obs.get("total_steps_remaining", 0),
+            "violations_count":       obs.get("violations_count", 0),
+            # Day 3 — Overseer report-reading
+            "reports_read":           obs.get("reports_read", []),
+            "read_report_details":    obs.get("read_report_details", {}),
+            "feedback":               obs.get("feedback", ""),
+            "done":   data.get("done",   obs.get("done",   False)),
             "reward": data.get("reward", obs.get("reward", 0.0)) or 0.0,
         }
 
@@ -246,24 +286,44 @@ class FleetHTTPClient:
 # ============================================================
 def build_user_prompt(obs: dict, step: int, history: List[str]) -> str:
     phase = obs.get("current_phase", "fraud_specialist")
+
+    # ── Resume sections (specialist phases) ──────────────────────────
     visible = obs.get("visible_sections", {})
     sections_text = "".join(
         f"\n--- {name.upper()} ---\n{content}\n"
         for name, content in visible.items()
-    )
+    ) if visible else " (none revealed yet)"
 
+    # ── Specialist reports summary ────────────────────────────────────
     reports_text = ""
     for r in obs.get("specialist_reports", []):
-        role = r.get("specialist_role", "?")
-        findings = r.get("findings", "")
-        has_issues = r.get("has_issues", False)
-        conf = r.get("confidence", 0.0)
+        role      = r.get("specialist_role", "?")
+        findings  = r.get("findings", "")
+        has_issues= r.get("has_issues", False)
+        conf      = r.get("confidence", 0.0)
         reports_text += (
-            f"\n[{role.upper()} REPORT]\n"
-            f"  Has Issues: {has_issues} | Confidence: {conf:.2f}\n"
-            f"  Findings: {findings}\n"
+            f"\n[{role.upper()}] issues={has_issues} conf={conf:.2f}\n"
+            f"  {findings}\n"
         )
 
+    # ── Enriched report details (Day 3 — populated after read_reports) ─
+    read_details = obs.get("read_report_details", {})
+    reports_read = obs.get("reports_read", [])
+    enriched_text = ""
+    if read_details:
+        enriched_text = "\nENRICHED REPORT DETAILS (from read_reports):\n"
+        for role, detail in read_details.items():
+            enriched_text += f"\n{detail}\n"
+    elif phase == "overseer" and obs.get("specialist_reports"):
+        unread = [
+            r.get("specialist_role", "?")
+            for r in obs.get("specialist_reports", [])
+            if r.get("specialist_role") not in reports_read
+        ]
+        if unread:
+            enriched_text = f"\nUnread reports (use read_reports): {unread}\n"
+
+    # ── Tool responses ────────────────────────────────────────────────
     extra = ""
     if obs.get("clarification_response"):
         extra += f"\nCandidate clarification: {obs['clarification_response']}"
@@ -272,39 +332,76 @@ def build_user_prompt(obs: dict, step: int, history: List[str]) -> str:
     if obs.get("verification_result"):
         extra += f"\nCredential verification: {obs['verification_result']}"
 
-    history_text = "\n".join(history[-4:]) if history else "None"
-    return textwrap.dedent(f"""\
-Step {step} | Phase: {phase} | Steps remaining in phase: {obs.get('steps_remaining', 0)} | Total steps left: {obs.get('total_steps_remaining', 0)}
-Feedback: {obs.get('feedback', '')}
+    violations = obs.get("violations_count", 0)
+    violation_warn = f"\n⚠ Violations this episode: {violations} (−{violations * 0.05:.2f} from final reward)" if violations else ""
 
-Job Description:
+    history_text = "\n".join(history[-5:]) if history else "None"
+
+    steps_left = obs.get("steps_remaining", 0)
+    urgent = "🚨 URGENT: steps_remaining=1 — you MUST submit your report/decision NOW." if steps_left <= 1 else ""
+
+    return textwrap.dedent(f"""\
+Step {step} | Phase: {phase} | Phase steps left: {steps_left} | Total steps left: {obs.get('total_steps_remaining', 0)}
+Feedback: {obs.get('feedback', '')}
+{violation_warn}
+
+JOB DESCRIPTION:
 {obs.get('job_description', '')}
 
-Revealed Resume Sections:{sections_text}
-{f"Specialist Reports:{reports_text}" if reports_text else ""}
+REVEALED RESUME SECTIONS:{sections_text}
+{f"SPECIALIST REPORTS SUMMARY:{reports_text}" if reports_text else ""}
+{enriched_text}
 {extra}
 
-Previous actions this episode:
+RECENT ACTIONS:
 {history_text}
 
 Available actions: {obs.get('available_actions', [])}
-
-Choose your next action (JSON only).
-{"URGENT: steps_remaining <= 1 — you MUST submit your report/decision NOW." if obs.get('steps_remaining', 0) <= 1 else ""}
+{urgent}
+Respond with ONLY valid JSON for your next action.
 """)
 
 
 # ============================================================
 # LLM action parser
 # ============================================================
+def _overseer_fallback(obs: dict) -> dict:
+    """
+    Smart overseer fallback: if no reports have been read yet and budget > 1,
+    try to read the first unread report rather than immediately submitting.
+    When budget is 1, always submit_final_decision.
+    """
+    reports_read = obs.get("reports_read", [])
+    specialist_reports = obs.get("specialist_reports", [])
+    available = obs.get("available_actions", [])
+
+    if obs.get("steps_remaining", 0) <= 1 or "submit_final_decision" not in available:
+        return FALLBACK_ACTIONS["overseer"]
+
+    # Try to read a report we haven't read yet
+    if "read_reports" in available:
+        for r in specialist_reports:
+            role = r.get("specialist_role", "")
+            if role and role not in reports_read:
+                return {"action_type": "read_reports", "report_target": role}
+
+    return FALLBACK_ACTIONS["overseer"]
+
+
 def parse_action(client: OpenAI, obs: dict, step: int, history: List[str]) -> dict:
     phase = obs.get("current_phase", "fraud_specialist")
     system_prompt = SYSTEM_PROMPTS.get(phase, SYSTEM_PROMPTS["overseer"])
     fallback = FALLBACK_ACTIONS.get(phase, FALLBACK_ACTIONS["overseer"])
 
-    # Force terminal action if budget exhausted
+    # Overseer gets a smarter fallback that tries to read reports first
+    if phase == "overseer":
+        fallback = _overseer_fallback(obs)
+
+    # Force terminal action if budget at 1 (last step — must submit)
     if obs.get("steps_remaining", 0) <= 1:
-        return fallback
+        if phase == "overseer":
+            return FALLBACK_ACTIONS["overseer"]
+        return FALLBACK_ACTIONS.get(phase, fallback)
 
     user_prompt = build_user_prompt(obs, step, history)
 
@@ -356,6 +453,12 @@ def _build_action(parsed: dict, phase: str, fallback: dict) -> dict:
             "specialist_confidence": float(parsed.get("specialist_confidence", 0.5)),
         }
 
+    elif at == "read_reports":
+        return {
+            "action_type": "read_reports",
+            "report_target": parsed.get("report_target", "fraud_specialist"),
+        }
+
     elif at == "request_reinvestigation":
         return {
             "action_type": "request_reinvestigation",
@@ -386,11 +489,22 @@ def action_to_str(action: dict) -> str:
     elif at == "verify_credential":
         return "verify_credential()"
     elif at == "submit_specialist_report":
-        return f"submit_specialist_report(issues={action.get('has_issues', False)},conf={action.get('specialist_confidence', 0):.2f})"
+        return (
+            f"submit_specialist_report("
+            f"issues={action.get('has_issues', False)},"
+            f"conf={action.get('specialist_confidence', 0):.2f})"
+        )
+    elif at == "read_reports":
+        return f"read_reports({action.get('report_target', '')})"
     elif at == "request_reinvestigation":
         return f"request_reinvestigation({action.get('reinvestigation_target', '')})"
     elif at == "submit_final_decision":
-        return f"submit_final_decision({action.get('decision', '')},fraud={action.get('fraud_flag', False)},conf={action.get('confidence', 0):.2f})"
+        return (
+            f"submit_final_decision("
+            f"{action.get('decision', '')},"
+            f"fraud={action.get('fraud_flag', False)},"
+            f"conf={action.get('confidence', 0):.2f})"
+        )
     return f"{at}()"
 
 
