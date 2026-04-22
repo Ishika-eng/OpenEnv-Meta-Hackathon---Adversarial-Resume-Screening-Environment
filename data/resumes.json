@@ -35,8 +35,13 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Strong match: 5+ years Python experience, REST API expertise, SQL databases. All credentials verified."
-      }
+        "reasoning": "Strong match: 5+ years Python experience, REST API expertise, SQL databases. All credentials verified.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "REST API development",
+        "SQL databases"
+      ]
     },
     {
       "id": "E2",
@@ -69,8 +74,12 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Clear match: 3 years React experience at reputable companies, responsive design skills demonstrated."
-      }
+        "reasoning": "Clear match: 3 years React experience at reputable companies, responsive design skills demonstrated.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "React"
+      ]
     },
     {
       "id": "E3",
@@ -103,8 +112,13 @@
         "decision": "reject",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Complete field mismatch: candidate is a pastry chef applying for a data scientist role. No relevant skills or experience."
-      }
+        "reasoning": "Complete field mismatch: candidate is a pastry chef applying for a data scientist role. No relevant skills or experience.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Python",
+        "machine learning"
+      ]
     },
     {
       "id": "E4",
@@ -137,8 +151,14 @@
         "decision": "reject",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Complete field mismatch: marketing professional applying for DevOps role. No relevant technical skills."
-      }
+        "reasoning": "Complete field mismatch: marketing professional applying for DevOps role. No relevant technical skills.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "AWS",
+        "Kubernetes",
+        "CI/CD pipelines"
+      ]
     },
     {
       "id": "E5",
@@ -175,8 +195,13 @@
           "reference_denial",
           "timeline_impossible"
         ],
-        "reasoning": "Candidate claims 15 years experience but is only 23 years old. Claims PhD from MIT completed at age 2. Reference at Google denies knowing the candidate."
-      }
+        "reasoning": "Candidate claims 15 years experience but is only 23 years old. Claims PhD from MIT completed at age 2. Reference at Google denies knowing the candidate.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "distributed systems",
+        "Java or Go preferred"
+      ]
     },
     {
       "id": "E6",
@@ -209,8 +234,13 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Strong iOS developer with 4 years experience at reputable companies. All credentials verified."
-      }
+        "reasoning": "Strong iOS developer with 4 years experience at reputable companies. All credentials verified.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "iOS or Android",
+        "Swift or Kotlin"
+      ]
     },
     {
       "id": "E7",
@@ -243,8 +273,12 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Strong fullstack match with 4 years experience in Node.js, React, and PostgreSQL."
-      }
+        "reasoning": "Strong fullstack match with 4 years experience in Node.js, React, and PostgreSQL.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Node"
+      ]
     },
     {
       "id": "E8",
@@ -277,8 +311,13 @@
         "decision": "reject",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Field mismatch: mechanical engineer with no production ML experience applying for ML Engineer role."
-      }
+        "reasoning": "Field mismatch: mechanical engineer with no production ML experience applying for ML Engineer role.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Python",
+        "TensorFlow or PyTorch"
+      ]
     },
     {
       "id": "E9",
@@ -320,8 +359,14 @@
           "fake_references",
           "nonexistent_institution"
         ],
-        "reasoning": "Blatantly fabricated resume with impossible claims, fake institution, unverifiable references, and absurd experience."
-      }
+        "reasoning": "Blatantly fabricated resume with impossible claims, fake institution, unverifiable references, and absurd experience.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Python",
+        "REST APIs",
+        "cloud infrastructure"
+      ]
     },
     {
       "id": "E10",
@@ -354,8 +399,14 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Strong match: 3 years QA automation experience with Selenium, Python, CI/CD integration."
-      }
+        "reasoning": "Strong match: 3 years QA automation experience with Selenium, Python, CI/CD integration.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Test automation",
+        "Selenium or Cypress",
+        "Python or JavaScript"
+      ]
     },
     {
       "id": "E11",
@@ -388,8 +439,13 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Excellent match: 7 years cloud experience, AWS certification, Terraform expertise."
-      }
+        "reasoning": "Excellent match: 7 years cloud experience, AWS certification, Terraform expertise.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "AWS Solutions Architect certification required",
+        "Terraform"
+      ]
     },
     {
       "id": "E12",
@@ -422,8 +478,14 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Good match for entry-level: strong academic background, relevant internship, required skills present."
-      }
+        "reasoning": "Good match for entry-level: strong academic background, relevant internship, required skills present.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "SQL",
+        "Excel",
+        "Tableau"
+      ]
     }
   ],
   "medium": [
@@ -458,8 +520,12 @@
         "decision": "reject",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Partial match but insufficient: has message queue and event-driven experience, but lacks the required Go/Java proficiency and formal distributed systems experience for a senior role."
-      }
+        "reasoning": "Partial match but insufficient: has message queue and event-driven experience, but lacks the required Go/Java proficiency and formal distributed systems experience for a senior role.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Go or Java"
+      ]
     },
     {
       "id": "M2",
@@ -492,8 +558,13 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Excellent match: 5 years B2B SaaS PM experience, MBA from Wharton, strong data-driven track record."
-      }
+        "reasoning": "Excellent match: 5 years B2B SaaS PM experience, MBA from Wharton, strong data-driven track record.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "B2B SaaS",
+        "data-driven decision making"
+      ]
     },
     {
       "id": "M3",
@@ -533,8 +604,13 @@
           "team_size_inflation",
           "scope_exaggeration"
         ],
-        "reasoning": "Reference reveals TechStartup Inc. was a 3-person company, contradicting the impression of leading a team. Claiming to have built an entire web platform misrepresents the scale. Backend depth is limited to small-scale work."
-      }
+        "reasoning": "Reference reveals TechStartup Inc. was a 3-person company, contradicting the impression of leading a team. Claiming to have built an entire web platform misrepresents the scale. Backend depth is limited to small-scale work.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "React",
+        "Node"
+      ]
     },
     {
       "id": "M4",
@@ -571,8 +647,14 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Good match: 4 years experience, SIEM expertise with Splunk, incident response experience. Has Security+ (meets minimum cert requirement) though not CISSP. The job says 'Security+ or CISSP required' so Security+ qualifies."
-      }
+        "reasoning": "Good match: 4 years experience, SIEM expertise with Splunk, incident response experience. Has Security+ (meets minimum cert requirement) though not CISSP. The job says 'Security+ or CISSP required' so Security+ qualifies.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "SIEM tools",
+        "incident response",
+        "network security"
+      ]
     },
     {
       "id": "M5",
@@ -605,8 +687,15 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Excellent match: 4 years data engineering with Spark, Airflow, Python, and cloud data warehouses."
-      }
+        "reasoning": "Excellent match: 4 years data engineering with Spark, Airflow, Python, and cloud data warehouses.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Apache Spark",
+        "Airflow",
+        "Python",
+        "cloud data warehouses"
+      ]
     },
     {
       "id": "M6",
@@ -639,8 +728,13 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Strong match: 7 years frontend, deep React/TypeScript, significant e-commerce experience at Yandex Market."
-      }
+        "reasoning": "Strong match: 7 years frontend, deep React/TypeScript, significant e-commerce experience at Yandex Market.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "React",
+        "TypeScript"
+      ]
     },
     {
       "id": "M7",
@@ -676,8 +770,13 @@
           "compliance_misrepresentation",
           "hipaa_unaudited"
         ],
-        "reasoning": "Candidate claims HIPAA-compliant implementation but reference confirms it was based on best practices research, not formal compliance audit. Stating HIPAA compliance without having undergone audit is a material misrepresentation in healthcare, even though technical skills are genuine."
-      }
+        "reasoning": "Candidate claims HIPAA-compliant implementation but reference confirms it was based on best practices research, not formal compliance audit. Stating HIPAA compliance without having undergone audit is a material misrepresentation in healthcare, even though technical skills are genuine.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Python",
+        "Django"
+      ]
     },
     {
       "id": "M8",
@@ -714,8 +813,12 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Excellent match: 4 years ML/NLP, PyTorch expertise, published papers, deployed production models."
-      }
+        "reasoning": "Excellent match: 4 years ML/NLP, PyTorch expertise, published papers, deployed production models.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "PyTorch"
+      ]
     },
     {
       "id": "M9",
@@ -748,8 +851,14 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Strong match: 4 years DevOps, Kubernetes, Terraform, on-call experience at high-scale companies."
-      }
+        "reasoning": "Strong match: 4 years DevOps, Kubernetes, Terraform, on-call experience at high-scale companies.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Kubernetes",
+        "Terraform",
+        "CI/CD"
+      ]
     },
     {
       "id": "M10",
@@ -782,8 +891,13 @@
         "decision": "reject",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Reference flags tendency to over-engineer solutions, which is a concern for a senior role requiring pragmatic delivery. While technically competent, the pattern of unnecessary complexity suggests misalignment with senior-level expectations."
-      }
+        "reasoning": "Reference flags tendency to over-engineer solutions, which is a concern for a senior role requiring pragmatic delivery. While technically competent, the pattern of unnecessary complexity suggests misalignment with senior-level expectations.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Spring Boot",
+        "microservices"
+      ]
     },
     {
       "id": "M11",
@@ -816,8 +930,12 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Excellent match: 3 years frontend, deep WCAG accessibility expertise, both Vue.js and React experience, certified specialist."
-      }
+        "reasoning": "Excellent match: 3 years frontend, deep WCAG accessibility expertise, both Vue.js and React experience, certified specialist.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Vue"
+      ]
     },
     {
       "id": "M12",
@@ -850,8 +968,13 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Strong match: 4 years Python backend, extensive testing experience, REST API expertise."
-      }
+        "reasoning": "Strong match: 4 years Python backend, extensive testing experience, REST API expertise.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Python",
+        "REST APIs"
+      ]
     }
   ],
   "hard": [
@@ -896,8 +1019,13 @@
           "education_unverifiable",
           "fabricated_advisor_relationship"
         ],
-        "reasoning": "Both references deny knowing the candidate. PhD advisor says they don't recall this student. Google Brain has no record of employment. Despite a highly polished resume, all key credentials are unverifiable. Classic sophisticated identity fraud."
-      }
+        "reasoning": "Both references deny knowing the candidate. PhD advisor says they don't recall this student. Google Brain has no record of employment. Despite a highly polished resume, all key credentials are unverifiable. Classic sophisticated identity fraud.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "PyTorch",
+        "production ML systems"
+      ]
     },
     {
       "id": "H2",
@@ -939,8 +1067,13 @@
           "scope_exaggeration",
           "work_area_misrepresentation"
         ],
-        "reasoning": "Reference explicitly states title was mid-level not senior, and work was on internal tools not trading systems. Claiming senior title and trading system experience when neither is true constitutes resume fraud. The pattern of multiple embellishments (title, scope, team contribution) indicates intentional deception."
-      }
+        "reasoning": "Reference explicitly states title was mid-level not senior, and work was on internal tools not trading systems. Claiming senior title and trading system experience when neither is true constitutes resume fraud. The pattern of multiple embellishments (title, scope, team contribution) indicates intentional deception.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Python",
+        "microservices architecture"
+      ]
     },
     {
       "id": "H3",
@@ -978,8 +1111,14 @@
           "scope_exaggeration",
           "metrics_misattribution"
         ],
-        "reasoning": "Significant resume inflation: claimed Principal title was actually Senior, team metrics presented as individual achievements. While the candidate has real DevOps experience, the pattern of consistent exaggeration across roles raises trust concerns for a position requiring independent incident handling. The reference explicitly contradicts key claims."
-      }
+        "reasoning": "Significant resume inflation: claimed Principal title was actually Senior, team metrics presented as individual achievements. While the candidate has real DevOps experience, the pattern of consistent exaggeration across roles raises trust concerns for a position requiring independent incident handling. The reference explicitly contradicts key claims.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Kubernetes",
+        "AWS",
+        "Terraform"
+      ]
     },
     {
       "id": "H4",
@@ -1017,8 +1156,14 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Excellent match: PhD Biostatistics from Harvard, 6 years healthcare data science, clinical trial experience at Moderna. Minor scope clarifications but core qualifications are exceptional."
-      }
+        "reasoning": "Excellent match: PhD Biostatistics from Harvard, 6 years healthcare data science, clinical trial experience at Moderna. Minor scope clarifications but core qualifications are exceptional.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Python",
+        "statistical modeling",
+        "A/B testing"
+      ]
     },
     {
       "id": "H5",
@@ -1060,8 +1205,13 @@
           "scope_exaggeration",
           "mentoring_fabrication"
         ],
-        "reasoning": "Systematic resume inflation: claimed Staff title (was Senior), claimed mentoring 8 engineers (was informal knowledge sharing with no direct reports). Reference at Airbnb explicitly contradicts title claim. Multiple layered exaggerations across all roles indicate a pattern of intentional deception."
-      }
+        "reasoning": "Systematic resume inflation: claimed Staff title (was Senior), claimed mentoring 8 engineers (was informal knowledge sharing with no direct reports). Reference at Airbnb explicitly contradicts title claim. Multiple layered exaggerations across all roles indicate a pattern of intentional deception.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "React",
+        "performance optimization"
+      ]
     },
     {
       "id": "H6",
@@ -1097,8 +1247,13 @@
         "fraud_indicators": [
           "metrics_misattribution"
         ],
-        "reasoning": "Strong match despite some metric attribution issues: genuine Go and distributed systems expertise at Uber and Cloudflare. The latency improvement was a team effort but candidate was a key contributor. Technical depth is real."
-      }
+        "reasoning": "Strong match despite some metric attribution issues: genuine Go and distributed systems expertise at Uber and Cloudflare. The latency improvement was a team effort but candidate was a key contributor. Technical depth is real.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Go",
+        "distributed systems"
+      ]
     },
     {
       "id": "H7",
@@ -1141,8 +1296,13 @@
           "team_size_inflation",
           "revenue_fabrication"
         ],
-        "reasoning": "Investor reference confirms ARR was projected not actual (200K claimed vs 80K real), team was 2+2 contractors not 4 FTEs, and Notion tenure was 18 months not 2 years. Multiple material misrepresentations of verifiable facts constitute fraud, even though core technical skills are genuine."
-      }
+        "reasoning": "Investor reference confirms ARR was projected not actual (200K claimed vs 80K real), team was 2+2 contractors not 4 FTEs, and Notion tenure was 18 months not 2 years. Multiple material misrepresentations of verifiable facts constitute fraud, even though core technical skills are genuine.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "React",
+        "Node"
+      ]
     },
     {
       "id": "H8",
@@ -1185,8 +1345,14 @@
           "conference_misrepresentation",
           "team_size_inflation"
         ],
-        "reasoning": "Pervasive pattern: doubled engagement count (100+ vs 40-50 actual), misrepresented known vulnerability as zero-day, inflated tool adoption (15 vs 5 users), misrepresented DEF CON village talk as main conference. Every verifiable metric on the resume was inflated. This level of systematic deception constitutes fraud."
-      }
+        "reasoning": "Pervasive pattern: doubled engagement count (100+ vs 40-50 actual), misrepresented known vulnerability as zero-day, inflated tool adoption (15 vs 5 users), misrepresented DEF CON village talk as main conference. Every verifiable metric on the resume was inflated. This level of systematic deception constitutes fraud.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Penetration testing",
+        "OWASP Top 10",
+        "cloud security"
+      ]
     },
     {
       "id": "H9",
@@ -1226,8 +1392,13 @@
         "fraud_indicators": [
           "scope_exaggeration"
         ],
-        "reasoning": "Strong candidate: real iOS expertise, published apps, CI/CD experience. Minor scope exaggeration on video encoding (UI-level optimization vs infrastructure-level). Overall a good hire for the role."
-      }
+        "reasoning": "Strong candidate: real iOS expertise, published apps, CI/CD experience. Minor scope exaggeration on video encoding (UI-level optimization vs infrastructure-level). Overall a good hire for the role.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Swift",
+        "App Store published apps"
+      ]
     },
     {
       "id": "H10",
@@ -1263,8 +1434,14 @@
         "fraud_indicators": [
           "team_metrics_as_individual"
         ],
-        "reasoning": "Excellent candidate: genuine large-scale data engineering experience. Team metrics were partially attributed individually but reference confirms technical depth and scale of work. Strong hire for any data engineering role."
-      }
+        "reasoning": "Excellent candidate: genuine large-scale data engineering experience. Team metrics were partially attributed individually but reference confirms technical depth and scale of work. Strong hire for any data engineering role.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Spark",
+        "Airflow",
+        "Python"
+      ]
     },
     {
       "id": "H11",
@@ -1305,8 +1482,14 @@
           "title_inflation",
           "scale_exaggeration"
         ],
-        "reasoning": "Strong candidate with genuine Kubernetes expertise at reputable infrastructure companies. Title inflation (Senior -> Staff) is common. Team metrics presented as individual, but actual individual scope (~1700 nodes) is still impressive. Both references confirm technical competency."
-      }
+        "reasoning": "Strong candidate with genuine Kubernetes expertise at reputable infrastructure companies. Title inflation (Senior -> Staff) is common. Team metrics presented as individual, but actual individual scope (~1700 nodes) is still impressive. Both references confirm technical competency.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Kubernetes",
+        "service mesh",
+        "observability"
+      ]
     },
     {
       "id": "H12",
@@ -1344,8 +1527,13 @@
         "decision": "accept",
         "is_fraud": false,
         "fraud_indicators": [],
-        "reasoning": "Excellent match: 5 years Python backend in fintech, real PCI DSS compliance experience, FastAPI and Django, payment systems expertise at Klarna and Zettle. References strongly positive with minor clarifications on team scope."
-      }
+        "reasoning": "Excellent match: 5 years Python backend in fintech, real PCI DSS compliance experience, FastAPI and Django, payment systems expertise at Klarna and Zettle. References strongly positive with minor clarifications on team scope.",
+        "employment_gaps": []
+      },
+      "required_skills": [
+        "Python",
+        "FastAPI or Django"
+      ]
     }
   ]
 }
