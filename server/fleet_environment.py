@@ -760,6 +760,63 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
             reward=reward,
         )
 
+    # ------------------------------------------------------------------
+    # Independent reward sub-functions (build-guide: multiple named rewards)
+    # ------------------------------------------------------------------
+
+    def _reward_decision_accuracy(self, decision: str, fraud_flag: bool,
+                                   confidence: float, gt: dict) -> float:
+        """Component A: Overseer decision accuracy (0.0 – 0.70)."""
+        correct_decision = (decision == gt["decision"])
+        correct_fraud    = (fraud_flag == gt["is_fraud"])
+        both_correct     = correct_decision and correct_fraud
+        r = 0.0
+        if correct_decision: r += 0.35
+        if correct_fraud:    r += 0.25
+        if both_correct:     r += round(0.10 * confidence, 4)
+        if not both_correct and confidence >= 0.7:
+            r = max(0.0, r - 0.05)   # miscalibration penalty
+        return r
+
+    def _reward_specialist_quality(self, tier_mult: float) -> tuple:
+        """Component B: Specialist report quality (0.0 – 0.22)."""
+        per_spec = round((0.20 / 3) * tier_mult, 4)
+        correct  = [r.specialist_role for r in self._specialist_reports
+                    if self._specialist_was_correct(r)]
+        return per_spec * len(correct), correct
+
+    def _reward_investigation_quality(self, gt: dict) -> float:
+        """Component C: Investigation depth and tool use (0.0 – 0.05)."""
+        n_sections   = len(set(self._sections_viewed))
+        max_sections = len(self._sample.get("resume_sections", {}) or {})
+        depth_ratio  = n_sections / max_sections if max_sections > 0 else 0.0
+        tool_count   = (self._references_checked
+                        + self._verifications_done
+                        + self._clarifications_asked)
+        tool_ratio   = min(tool_count / 3.0, 1.0)
+        depth_score  = depth_ratio * 0.6 + tool_ratio * 0.4
+        r = round(0.05 * depth_score, 4)
+        if gt["is_fraud"] and tool_count == 0:
+            r = max(0.0, r - 0.05)   # anti-shortcut penalty
+        return r
+
+    def _reward_format_compliance(self, fraud_flag: bool, fraud_reasoning: str,
+                                   gt: dict) -> float:
+        """Component D: Fraud reasoning quality and format compliance (0.0 – 0.05)."""
+        if fraud_flag and len(fraud_reasoning.strip()) < 15:
+            return -0.05   # penalty: fraud flagged with no reasoning
+        indicators = gt.get("fraud_indicators", [])
+        if indicators and fraud_reasoning:
+            low = fraud_reasoning.lower()
+            matched = sum(
+                1 for ind in indicators
+                if any(kw in low for kw in ind.replace("_", " ").split() if len(kw) > 3)
+            )
+            return round(0.05 * (matched / len(indicators)), 4)
+        elif not indicators and not fraud_flag:
+            return 0.02   # correctly identified clean resume
+        return 0.0
+
     def _handle_submit_final_decision(self, action: FleetAction) -> FleetObservation:
         """
         Terminal reward function for the fleet episode.
@@ -796,6 +853,10 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
 
         reward = 0.0
 
+        # Require non-trivial reasoning when flagging fraud (anti-exploit)
+        if fraud_flag and len(fraud_reasoning.strip()) < 15:
+            reward = max(0.0, reward - 0.05)
+
         # ── A: Overseer decision accuracy (up to 0.70) ───────────────
         correct_decision = (decision == gt["decision"])
         correct_fraud    = (fraud_flag == gt["is_fraud"])
@@ -808,6 +869,9 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         # Calibrated confidence: only rewarded when both correct
         if both_correct:
             reward += round(0.10 * confidence, 4)
+        # Confidence miscalibration penalty — discourages overconfident wrong answers
+        if not both_correct and confidence >= 0.7:
+            reward = max(0.0, reward - 0.05)
 
         # ── B: Specialist quality bonus (tier-scaled, up to ~0.22) ───
         # Each correct specialist earns (0.20/3) × tier_mult.
@@ -851,6 +915,9 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         tool_ratio   = min(tool_count / 3.0, 1.0)
         depth_score  = depth_ratio * 0.6 + tool_ratio * 0.4
         reward += round(0.05 * depth_score, 4)
+        # Anti-shortcut: penalise zero tool use on fraud resumes
+        if gt["is_fraud"] and tool_count == 0:
+            reward = max(0.0, reward - 0.05)
 
         # ── F: Fraud reasoning quality (up to 0.05) ──────────────────
         # Match fraud_reasoning text against known fraud indicators.
