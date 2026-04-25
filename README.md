@@ -23,7 +23,8 @@ tags: [openenv]
 | 🌐 **Live Environment** | [HuggingFace Space — resume-env](https://huggingface.co/spaces/IshikaMahadar/resume-env) |
 | 📓 **Colab Training Notebook** | [train_grpo_fleet.ipynb](./train_grpo_fleet.ipynb) |
 | 🤖 **Trained LoRA Adapter** | [`grpo_results/grpo_fleet_output/final/`](./grpo_results/grpo_fleet_output/final/) |
-| 📈 **Reward Curve** | See below — 0.736 → 0.850 over 800 steps |
+| 📈 **GRPO Reward Curve** | See below — 0.736 → 0.850 over 800 steps |
+| 📊 **Baseline Evaluation** | See below — rule-based vs fine-tuned on live env |
 | 💻 **GitHub Repo** | [Ishika-eng/OpenEnv-Meta-Hackathon](https://github.com/Ishika-eng/OpenEnv-Meta-Hackathon---Adversarial-Resume-Screening-Environment) |
 
 ---
@@ -142,7 +143,18 @@ Every fraud resume guarantees `verify_credential` returns FAILED and `check_refe
 
 ![GRPO Reward Curve](assets/reward_curve.png)
 
-The reward curve shows the model learning to:
+### Baseline Evaluation (live environment, 9 episodes)
+
+![Baseline Chart](assets/baseline_chart.png)
+
+| Agent | Easy | Medium | Hard | **Overall** |
+|:---|:---:|:---:|:---:|:---:|
+| Rule-based baseline | 0.747 | 0.873 | 1.000 | **0.873** |
+| Fine-tuned (GRPO) | *run on Colab* | | | |
+
+The baseline fails on fraud cases (easy seed=30: 0.24, medium seed=10: 0.62) because its skills and timeline specialists never flag issues — the fine-tuned model learns from evidence in the observation to correctly classify these.
+
+### What the reward curve shows the model learning to:
 1. Output valid JSON action objects reliably
 2. Select role-appropriate actions (no violations)
 3. Prioritise `verify_credential` as the Fraud Specialist's first move
