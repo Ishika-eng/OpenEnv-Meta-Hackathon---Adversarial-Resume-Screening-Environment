@@ -956,10 +956,14 @@ class FleetResumeEnvironment(Environment[FleetObservation, FleetAction, FleetSta
         else:
             available = list(refs.keys())
             if available:
-                rd = refs[available[0]]
-                self._last_reference = f"{rd['name']}: {rd['response']}"
+                self._last_reference = (
+                    f"Reference '{ref_id}' not found. "
+                    f"Available references: {available}."
+                )
             else:
                 self._last_reference = "No references available."
+            self._last_feedback = "Reference check completed."
+            return 0.0
         is_fraud = self._sample["ground_truth"].get("is_fraud", False)
         reward = 0.05 if is_fraud else 0.02
         self._last_feedback = "Reference check completed."

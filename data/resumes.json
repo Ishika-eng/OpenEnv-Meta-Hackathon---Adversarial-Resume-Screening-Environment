@@ -96,7 +96,11 @@
       "reference_check_results": {
         "ref1": {
           "name": "Marie Dupont",
-          "response": "Carlos is an exceptional pastry chef. His creativity and attention to detail are outstanding."
+          "response": "Carlos is an exceptional pastry chef. His creativity and attention to detail are outstanding. I am not able to speak to any data science or machine learning work \u2014 I don't believe he has done any."
+        },
+        "ref2": {
+          "name": "Dr. Sarah Kim (listed employer)",
+          "response": "We have no record of a 'Carlos' in our data science department. This candidate does not appear in our employment records."
         }
       },
       "clarification_answers": {
@@ -105,15 +109,20 @@
       },
       "verification_data": {
         "education_verified": true,
-        "employment_dates_verified": true,
+        "employment_dates_verified": false,
         "certifications_valid": true
       },
       "ground_truth": {
         "decision": "reject",
-        "is_fraud": false,
-        "fraud_indicators": [],
+        "is_fraud": true,
+        "fraud_indicators": [
+          "role_mismatch_reference",
+          "fabricated_employment"
+        ],
         "reasoning": "Complete field mismatch: candidate is a pastry chef applying for a data scientist role. No relevant skills or experience.",
-        "employment_gaps": []
+        "employment_gaps": [
+          "Claimed 3 years ML experience unverifiable \u2014 reference is a pastry chef"
+        ]
       },
       "required_skills": [
         "Python",
@@ -135,7 +144,11 @@
       "reference_check_results": {
         "ref1": {
           "name": "Vikram Singh",
-          "response": "Priya is a talented marketing professional. She consistently delivers creative campaign ideas and meets deadlines."
+          "response": "Priya is a talented marketing professional. She consistently delivers creative campaign ideas and meets deadlines. I have no knowledge of any DevOps or cloud engineering background."
+        },
+        "ref2": {
+          "name": "AWS Certification Authority",
+          "response": "The AWS certifications listed by this candidate could not be located in our registry. The certificate IDs provided appear to be invalid."
         }
       },
       "clarification_answers": {
@@ -145,14 +158,19 @@
       "verification_data": {
         "education_verified": true,
         "employment_dates_verified": true,
-        "certifications_valid": true
+        "certifications_valid": false
       },
       "ground_truth": {
         "decision": "reject",
-        "is_fraud": false,
-        "fraud_indicators": [],
+        "is_fraud": true,
+        "fraud_indicators": [
+          "role_mismatch_reference",
+          "credential_fabrication"
+        ],
         "reasoning": "Complete field mismatch: marketing professional applying for DevOps role. No relevant technical skills.",
-        "employment_gaps": []
+        "employment_gaps": [
+          "AWS/Kubernetes certifications could not be validated"
+        ]
       },
       "required_skills": [
         "AWS",
@@ -295,7 +313,11 @@
       "reference_check_results": {
         "ref1": {
           "name": "Thomas Brown",
-          "response": "Robert is a skilled mechanical engineer with excellent analytical abilities. His work on our EV platform was outstanding."
+          "response": "Robert is a skilled mechanical engineer with excellent analytical abilities. His work on our EV platform was outstanding. I cannot speak to any machine learning or TensorFlow experience \u2014 that was not part of his role."
+        },
+        "ref2": {
+          "name": "Previous Employer HR (TechCorp AI)",
+          "response": "We cannot verify this candidate's employment. The dates listed do not match our records and the project described was not within their scope."
         }
       },
       "clarification_answers": {
@@ -304,15 +326,20 @@
       },
       "verification_data": {
         "education_verified": true,
-        "employment_dates_verified": true,
+        "employment_dates_verified": false,
         "certifications_valid": true
       },
       "ground_truth": {
         "decision": "reject",
-        "is_fraud": false,
-        "fraud_indicators": [],
+        "is_fraud": true,
+        "fraud_indicators": [
+          "role_mismatch_reference",
+          "employment_dates_fabricated"
+        ],
         "reasoning": "Field mismatch: mechanical engineer with no production ML experience applying for ML Engineer role.",
-        "employment_gaps": []
+        "employment_gaps": [
+          "Claimed ML employment dates conflict with reference account"
+        ]
       },
       "required_skills": [
         "Python",
@@ -504,7 +531,11 @@
       "reference_check_results": {
         "ref1": {
           "name": "Grace Muthoni",
-          "response": "Kevin is a strong backend developer. He was instrumental in our M-Pesa integration project. His message queue experience is solid but mostly with RabbitMQ, not Kafka."
+          "response": "Kevin is a decent backend developer. His message queue experience is solid but mostly with RabbitMQ, not Kafka as he claims. The distributed systems expertise listed on his resume is significantly overstated compared to what I observed."
+        },
+        "ref2": {
+          "name": "Lead Architect (previous employer)",
+          "response": "Kevin's contribution was limited to minor API endpoints. The 'architected distributed pipeline' claim is not accurate \u2014 that was designed by our senior team."
         }
       },
       "clarification_answers": {
@@ -514,14 +545,19 @@
       "verification_data": {
         "education_verified": true,
         "employment_dates_verified": true,
-        "certifications_valid": true
+        "certifications_valid": false
       },
       "ground_truth": {
         "decision": "reject",
-        "is_fraud": false,
-        "fraud_indicators": [],
+        "is_fraud": true,
+        "fraud_indicators": [
+          "technical_skills_misrepresented",
+          "scope_exaggeration"
+        ],
         "reasoning": "Partial match but insufficient: has message queue and event-driven experience, but lacks the required Go/Java proficiency and formal distributed systems experience for a senior role.",
-        "employment_gaps": []
+        "employment_gaps": [
+          "Distributed systems expertise overstated per reference"
+        ]
       },
       "required_skills": [
         "Go or Java"
@@ -542,7 +578,11 @@
       "reference_check_results": {
         "ref1": {
           "name": "Tom Martinez",
-          "response": "Rachel is an outstanding product manager. She combines strategic thinking with data-driven execution. Her work on Einstein Analytics was transformative."
+          "response": "Rachel showed promise as an associate PM. The Einstein Analytics project she references was actually led by a senior PM \u2014 her involvement was supporting data pulls. Her resume significantly overstates her ownership and impact."
+        },
+        "ref2": {
+          "name": "Salesforce University Registrar",
+          "response": "We cannot confirm the Salesforce certifications listed. The provided credential IDs do not match any records in our certification database."
         }
       },
       "clarification_answers": {
@@ -550,16 +590,21 @@
         "leadership_style": "I lead through influence rather than authority, building consensus across engineering, design, and business stakeholders."
       },
       "verification_data": {
-        "education_verified": true,
+        "education_verified": false,
         "employment_dates_verified": true,
         "certifications_valid": true
       },
       "ground_truth": {
         "decision": "accept",
-        "is_fraud": false,
-        "fraud_indicators": [],
+        "is_fraud": true,
+        "fraud_indicators": [
+          "credential_inflation",
+          "scope_exaggeration"
+        ],
         "reasoning": "Excellent match: 5 years B2B SaaS PM experience, MBA from Wharton, strong data-driven track record.",
-        "employment_gaps": []
+        "employment_gaps": [
+          "Claimed Salesforce Einstein Analytics ownership unverifiable"
+        ]
       },
       "required_skills": [
         "B2B SaaS",
@@ -594,7 +639,7 @@
       },
       "verification_data": {
         "education_verified": true,
-        "employment_dates_verified": true,
+        "employment_dates_verified": false,
         "certifications_valid": true
       },
       "ground_truth": {
@@ -671,7 +716,11 @@
       "reference_check_results": {
         "ref1": {
           "name": "Hiroshi Yamada",
-          "response": "Yuki is an exceptional data engineer. Her Spark optimization work saved us significant compute costs. She was instrumental in our Snowflake migration."
+          "response": "Yuki is a competent data analyst. The Spark optimization work she describes was primarily done by our senior engineers \u2014 she ran existing scripts. Her Snowflake migration involvement was minimal. Additionally, her listed end date conflicts with when she actually departed."
+        },
+        "ref2": {
+          "name": "Databricks (certification check)",
+          "response": "The Databricks Certified Associate certification listed cannot be verified. This name and ID combination does not appear in our records."
         }
       },
       "clarification_answers": {
@@ -680,15 +729,20 @@
       },
       "verification_data": {
         "education_verified": true,
-        "employment_dates_verified": true,
+        "employment_dates_verified": false,
         "certifications_valid": true
       },
       "ground_truth": {
         "decision": "accept",
-        "is_fraud": false,
-        "fraud_indicators": [],
+        "is_fraud": true,
+        "fraud_indicators": [
+          "tool_proficiency_exaggerated",
+          "employment_date_overlap"
+        ],
         "reasoning": "Excellent match: 4 years data engineering with Spark, Airflow, Python, and cloud data warehouses.",
-        "employment_gaps": []
+        "employment_gaps": [
+          "Two concurrent employers listed for overlapping 18-month period"
+        ]
       },
       "required_skills": [
         "Apache Spark",
@@ -761,7 +815,7 @@
       "verification_data": {
         "education_verified": true,
         "employment_dates_verified": true,
-        "certifications_valid": true
+        "certifications_valid": false
       },
       "ground_truth": {
         "decision": "accept",
@@ -1056,7 +1110,7 @@
       },
       "verification_data": {
         "education_verified": true,
-        "employment_dates_verified": true,
+        "employment_dates_verified": false,
         "certifications_valid": true
       },
       "ground_truth": {
@@ -1194,7 +1248,7 @@
       },
       "verification_data": {
         "education_verified": true,
-        "employment_dates_verified": true,
+        "employment_dates_verified": false,
         "certifications_valid": true
       },
       "ground_truth": {
@@ -1334,7 +1388,7 @@
       "verification_data": {
         "education_verified": true,
         "employment_dates_verified": true,
-        "certifications_valid": true
+        "certifications_valid": false
       },
       "ground_truth": {
         "decision": "reject",
