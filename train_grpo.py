@@ -353,7 +353,8 @@ def score_completion(completion: str, phase: str, available_actions: list) -> fl
     elif action_type in ("submit_specialist_report", "submit_final_decision"):
         # Must have required fields
         if action_type == "submit_specialist_report":
-            has_findings  = bool(action.get("findings", "").strip())
+            findings_text = action.get("findings", "") or ""
+            has_findings  = len(findings_text.strip()) >= 30   # require substantive text
             has_issues    = action.get("has_issues") is not None
             has_conf      = isinstance(action.get("specialist_confidence"), (int, float))
             reward += 0.10 if has_findings else 0.0
@@ -366,6 +367,12 @@ def score_completion(completion: str, phase: str, available_actions: list) -> fl
             reward += 0.10 if has_decision else 0.0
             reward += 0.05 if has_flag     else 0.0
             reward += 0.05 if has_conf     else 0.0
+
+    # Anti-exploit: fraud_flag=True requires non-empty fraud_reasoning
+    if action_type == "submit_final_decision":
+        fr = action.get("fraud_reasoning", "") or ""
+        if action.get("fraud_flag") and len(fr.strip()) < 15:
+            reward = max(0.0, reward - 0.10)
 
     # ── 5. Reasoning quality ─────────────────────────────────────────────
     reasoning = action.get("findings", "") or action.get("fraud_reasoning", "")
