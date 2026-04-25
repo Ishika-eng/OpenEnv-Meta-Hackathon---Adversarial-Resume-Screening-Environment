@@ -8,34 +8,38 @@ port: 7860
 description: "Hiring Fleet: AI Oversight System — A multi-agent environment where three specialist AI agents (Fraud Specialist, Skills Specialist, Timeline Specialist) sequentially investigate resumes and submit findings. An Overseer agent synthesises the reports and issues the final hiring decision, enabling scalable AI oversight of the hiring pipeline."
 
 observation:
-  task_type: string
-  current_phase: string
-  role_instructions: string
-  job_description: string
-  visible_sections: object
-  specialist_reports: array
-  available_actions: array
+  task_type: string             # easy | medium | hard
+  current_phase: string         # fraud_specialist | skills_specialist | timeline_specialist | overseer | complete
+  role_instructions: string     # role-specific instructions for the active agent
+  job_description: string       # requirements for the open position
+  visible_sections: object      # role-filtered resume sections (key: section name, value: text)
+  specialist_reports: array     # reports submitted by completed specialist phases
+  available_actions: array      # dynamically filtered list of valid actions for current phase
   clarification_response: string
   reference_response: string
   verification_result: string
-  steps_remaining: integer
+  steps_remaining: integer      # steps left in the current phase
   total_steps_remaining: integer
+  violations_count: integer     # out-of-role action count (each costs -0.05 reward)
+  reports_read: array           # specialist roles the overseer has explicitly read
+  read_report_details: object   # enriched report text per specialist (populated by read_reports)
   feedback: string
   done: boolean
   reward: float
 
 action:
-  action_type: string
-  episode_id: string
-  section: string
-  question: string
-  reference_id: string
-  findings: string
-  has_issues: boolean
-  specialist_confidence: float
+  action_type: string           # view_section | ask_clarification | check_reference | verify_credential | submit_specialist_report | read_reports | request_reinvestigation | submit_final_decision
+  episode_id: string            # concurrent-session identifier
+  section: string               # for view_section
+  question: string              # for ask_clarification
+  reference_id: string          # for check_reference (ref1 | ref2)
+  findings: string              # for submit_specialist_report
+  has_issues: boolean           # for submit_specialist_report
+  specialist_confidence: float  # for submit_specialist_report
+  report_target: string         # for read_reports (fraud_specialist | skills_specialist | timeline_specialist)
   reinvestigation_target: string
   reinvestigation_reason: string
-  decision: string
+  decision: string              # for submit_final_decision (accept | reject)
   fraud_flag: boolean
   confidence: float
   fraud_reasoning: string
@@ -44,13 +48,13 @@ reward_range: [0.0, 1.0]
 
 tasks:
   - name: easy
-    description: "Clear match/mismatch with obvious fraud. Budget: 7 total steps across all fleet phases."
+    description: "Clear match/mismatch with obvious fraud (role-mismatch references, fake credentials). Budget: 8 total steps across all fleet phases."
     num_episodes: 12
   - name: medium
-    description: "Subtle mismatches and embellished resumes. Budget: 10 total steps."
+    description: "Subtle mismatches and embellished resumes (scope exaggeration, compliance misrepresentation). Budget: 11 total steps."
     num_episodes: 12
   - name: hard
-    description: "Deeply embedded fraud, title inflation, scope exaggeration. Budget: 13 total steps."
+    description: "Deeply embedded fraud: title inflation, contradicting references, sophisticated fabrication. Budget: 15 total steps."
     num_episodes: 12
 
 requirements:
