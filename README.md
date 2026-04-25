@@ -147,12 +147,14 @@ Every fraud resume guarantees `verify_credential` returns FAILED and `check_refe
 
 ![Baseline Chart](assets/baseline_chart.png)
 
+![Comparison Chart](assets/comparison_chart.png)
+
 | Agent | Easy | Medium | Hard | **Overall** |
 |:---|:---:|:---:|:---:|:---:|
 | Rule-based baseline | 0.747 | 0.873 | 1.000 | **0.873** |
-| Fine-tuned (GRPO) | *run on Colab* | | | |
+| **Fine-tuned (GRPO)** | 0.722 | 0.888 | 1.000 | **0.870** |
 
-The baseline fails on fraud cases (easy seed=30: 0.24, medium seed=10: 0.62) because its skills and timeline specialists never flag issues — the fine-tuned model learns from evidence in the observation to correctly classify these.
+Both agents perform comparably. The fine-tuned model wins on **medium fraud detection** (step-level reward 0.08 vs 0.00 — it correctly flags `has_issues=True` based on failed credential verification). The rule-based agent wins on **easy fraud** (catches `ref2` denial that the model misses). Overall, the 1.5B fine-tuned model matches a hand-crafted rule-based agent — confirming GRPO taught role discipline and partial fraud reasoning. Stage 2 training with live environment rewards would improve final decision accuracy.
 
 ### What the reward curve shows the model learning to:
 1. Output valid JSON action objects reliably
