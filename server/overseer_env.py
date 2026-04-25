@@ -17,7 +17,7 @@ Architecture
 OverseerConfig                  — dataclass for overseer constraints & reward params
 OVERSEER_DECISION_MATRIX        — consensus map (fraud×skills×timeline) → hint
 OVERSEER_ROLE_INSTRUCTIONS      — detailed prompt injected into FleetObservation
-get_report_enrichment()         — generates env-level analysis appended on read
+get_report_enrichment()         — returns specialist's own findings (no ground-truth leakage)
 compute_read_reward()           — per-step reward for read_reports actions
 build_overseer_available_actions() — dynamic action list for overseer steps
 """
@@ -87,60 +87,43 @@ OVERSEER_DECISION_MATRIX: Dict[Tuple[bool, bool, bool], str] = {
 
 def get_report_enrichment(report, resume_sample: dict) -> str:
     """
-    Generate environment-level analytical context for one specialist report.
+    Return the specialist's full report for the overseer to read.
 
-    Called when the overseer uses read_reports for a specific target.
-    Returns a formatted string that includes:
-      • The specialist's own findings and confidence
-      • Environment-sourced ground-truth hints (fraud indicators, skills gap, gaps)
-
-    The ground-truth hints help the overseer agent make a calibrated final
-    decision even when a specialist's findings were vague.
+    Contains only what the specialist observed and concluded — no ground-truth
+    hints injected by the environment. The overseer must reason from specialist
+    findings alone, which is the core multi-agent coordination challenge: if
+    specialists write poor reports, the overseer has poor signal.
     """
-    gt = resume_sample.get("ground_truth", {})
     role = report.specialist_role
 
     if role == "fraud_specialist":
-        fraud_indicators = gt.get("fraud_indicators", [])
-        if fraud_indicators:
-            env_note = f"Known fraud signals: {', '.join(fraud_indicators)}."
-        else:
-            env_note = "No fraud signals on record for this resume."
-
         return (
             f"[FRAUD SPECIALIST — FULL READ]\n"
             f"Findings      : {report.findings}\n"
             f"Issues Flagged: {'YES' if report.has_issues else 'NO'}\n"
             f"Confidence    : {report.confidence:.2f}\n"
-            f"Env Context   : {env_note}"
+            f"Scope         : Used verify_credential and check_reference. "
+            f"Has-issues flag reflects credential and reference outcomes."
         )
 
     elif role == "skills_specialist":
         required = resume_sample.get("required_skills", [])
         req_str = ", ".join(required) if required else "Not specified"
-        expected_decision = gt.get("decision", "unknown")
-
         return (
             f"[SKILLS SPECIALIST — FULL READ]\n"
             f"Findings      : {report.findings}\n"
             f"Issues Flagged: {'YES' if report.has_issues else 'NO'}\n"
             f"Confidence    : {report.confidence:.2f}\n"
-            f"Env Context   : Required skills: {req_str}. "
-            f"Ground-truth decision: {expected_decision}."
+            f"Job requires  : {req_str}"
         )
 
     elif role == "timeline_specialist":
-        gaps = gt.get("employment_gaps", [])
-        gap_str = ", ".join(gaps) if gaps else "None detected"
-        is_fraud = gt.get("is_fraud", False)
-
         return (
             f"[TIMELINE SPECIALIST — FULL READ]\n"
             f"Findings      : {report.findings}\n"
             f"Issues Flagged: {'YES' if report.has_issues else 'NO'}\n"
             f"Confidence    : {report.confidence:.2f}\n"
-            f"Env Context   : Employment gaps: {gap_str}. "
-            f"Fraud case: {'YES' if is_fraud else 'NO'}."
+            f"Scope         : Checked chronological consistency and employment gaps."
         )
 
     # Generic fallback
