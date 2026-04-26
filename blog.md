@@ -175,6 +175,83 @@ On medium difficulty it actually beats the baseline (0.888 vs 0.873). The model 
 
 ---
 
+## A real episode, step by step
+
+Here's what actually happens when you run a **medium-difficulty fraud resume** through the fleet. This candidate claims to be a Senior Machine Learning Engineer at a real tech company with a Stanford degree — but it's fabricated.
+
+**Reset:** `POST /reset  {"task_type": "medium", "seed": 10}`
+
+---
+
+**Phase 1 — Fraud Specialist** *(2 steps)*
+
+> *Step 1:* `verify_credential`
+> → **`"FAILED — institution not found in accredited registry"`**
+> → Reward: **+0.05** (fraud signal found!)
+
+> *Step 2:* `submit_specialist_report`
+> → findings: `"Credential check: FAILED — institution not found. Suspicious."`, has_issues: `true`, confidence: `0.88`
+> → Reward: **+0.08** (correct fraud detection, calibrated confidence)
+
+The Fraud Specialist used both its steps efficiently: verified first, submitted immediately when it found a failure. No wasted moves.
+
+---
+
+**Phase 2 — Skills Specialist** *(3 steps)*
+
+> *Step 1:* `view_section  experience`
+> → Sees: 4 years at company, lists "led ML pipeline serving 10M users"
+
+> *Step 2:* `view_section  skills`
+> → Sees: Python, TensorFlow, Kubernetes — all plausible
+
+> *Step 3:* `submit_specialist_report`
+> → findings: `"Skills match job requirements. Experience description is plausible."`, has_issues: `false`, confidence: `0.70`
+> → Reward: **+0.03**
+
+The Skills Specialist sees nothing obviously wrong — the fraud is well-hidden in the credentials, not the skills section. This is exactly the design: fraud hides across sections.
+
+---
+
+**Phase 3 — Timeline Specialist** *(3 steps)*
+
+> *Step 1:* `view_section  experience`
+> → Sees dates: Jan 2019 – Dec 2023
+
+> *Step 2:* `view_section  header`
+> → Sees: graduated 2018, consistent with employment start
+
+> *Step 3:* `submit_specialist_report`
+> → findings: `"Timeline is consistent. No overlapping dates."`, has_issues: `false`, confidence: `0.65`
+> → Reward: **+0.01**
+
+No timeline issues — again, the fraud is in the credential, not the dates.
+
+---
+
+**Phase 4 — Overseer** *(3 steps)*
+
+> *Step 1:* `read_reports  fraud_specialist`
+> → Receives: `"FAILED credential. has_issues: true. confidence: 0.88"`
+> → Reward: **+0.02**
+
+> *Step 2:* `read_reports  skills_specialist` + `read_reports  timeline_specialist`
+> → Both clean. Only Fraud Specialist flagged an issue.
+> → Reward: **+0.05** (read all 3 reports)
+
+> *Step 3:* `submit_final_decision`
+> → decision: `"reject"`, fraud_flag: `true`, confidence: `0.85`
+> → fraud_reasoning: `"Fraud flagged by fraud_specialist: FAILED credential check"`
+> → Reward: **+0.60** (correct reject + correct fraud flag + calibrated confidence)
+
+---
+
+**Episode total reward: ~0.84 / 1.0** ✅
+
+The key insight: the Fraud Specialist found the lie in Step 1. The Overseer correctly synthesised that one signal from three reports — even though the other two specialists found nothing wrong — and made the right call. The chain worked.
+
+---
+
 ## Where to find everything
 
 🌐 **Live Environment (try it right now):**
