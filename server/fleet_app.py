@@ -449,104 +449,159 @@ async def home():
 
 <script>
   const BASE = window.location.origin;
+let episodeId = null;
+let totalReward = 0;
 
-  async function resetEpisode() {
-    const taskType = document.getElementById('taskType').value;
-    const seed = parseInt(document.getElementById('seed').value) || 42;
-    setOutput('Resetting episode...');
-    try {
-      const r = await fetch(`${BASE}/reset`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({task_type: taskType, seed})
-      });
-      const data = await r.json();
-      const obs = data.observation || data;
-      updateUI(obs, data.reward ?? 0);
-    } catch(e) {
-      setOutput(`Error: ${e.message}`);
-    }
-  }
-
-  async function step(action) {
-    setOutput('Sending action...');
-    try {
-      const r = await fetch(`${BASE}/step`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(action)
-      });
-      const data = await r.json();
-      const obs = data.observation || data;
-      updateUI(obs, data.reward ?? obs.reward ?? 0);
-    } catch(e) {
-      setOutput(`Error: ${e.message}`);
-    }
-  }
-
-  function submitSpecialistReport() {
-    step({
-      action_type: 'submit_specialist_report',
-      findings: 'Investigation complete. Credential verification and references checked.',
-      has_issues: false,
-      specialist_confidence: 0.75
+async function resetEpisode() {
+  const taskType = document.getElementById('taskType').value;
+  const seed = parseInt(document.getElementById('seed').value) || 42;
+  episodeId = `fleet-${taskType}-${seed}-${Date.now()}`;
+  totalReward = 0;
+  document.getElementById('reward-display').textContent = '0.0000';
+  setOutput('Resetting episode...');
+  try {
+    const r = await fetch(`${BASE}/reset`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({task_type: taskType, seed, episode_id: episodeId})
     });
+    const data = await r.json();
+    const obs = data.observation || data;
+    updateUI(obs, 0);
+  } catch(e) {
+    setOutput(`Error: ${e.message}`);
   }
+}
 
-  function submitFinalDecision(decision) {
-    const isFraud = decision === 'reject';
-    step({
-      action_type: 'submit_final_decision',
-      decision,
-      fraud_flag: isFraud,
-      confidence: 0.80,
-      fraud_reasoning: isFraud ? 'Credential verification failed and reference denied employment.' : ''
+async function step(action) {
+  if (!episodeId) {
+    setOutput('⚠️ Click "↺ Reset Episode" first to start an episode.');
+    return;
+  }
+  // Wrap action exactly as inference_fleet.py does
+  const cleanAction = Object.fromEntries(
+    Object.entries(action).filter(([_, v]) => v !== null && v !== undefined)
+  );
+  cleanAction.episode_id = episodeId;
+  const payload = {action: cleanAction, timeout_s: 30};
+
+  setOutput('Sending action...');
+  try {
+    const r = await fetch(`${BASE}/step`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
     });
+    const data = await r.json();
+    const obs = data.observation || data;
+    const stepReward = data.reward ?? obs.reward ?? 0;
+    totalReward += stepReward;
+    updateUI(obs, stepReward, totalReward);
+    if (obs.done || obs.current_phase === 'complete') {
+      setEpisodeDone();
+    }
+  } catch(e) {
+    setOutput(`Error: ${e.message}`);
   }
+}
 
-  function updateUI(obs, reward) {
-    const phase = obs.current_phase || '—';
-    document.getElementById('phase-badge').textContent = phase.replace(/_/g, ' ');
-    const rVal = typeof reward === 'number' ? reward : (obs.reward ?? 0);
-    const rDisplay = document.getElementById('reward-display');
-    rDisplay.textContent = `+${rVal.toFixed(4)}`;
-    rDisplay.style.color = rVal > 0 ? 'var(--green)' : rVal < 0 ? 'var(--red)' : 'var(--muted)';
-    document.getElementById('steps-left').textContent = obs.steps_remaining ?? '—';
-    document.getElementById('total-left').textContent = obs.total_steps_remaining ?? '—';
-    document.getElementById('violations').textContent = obs.violations_count ?? 0;
+function submitSpecialistReport() {
+  step({
+    action_type: 'submit_specialist_report',
+    findings: 'Investigation complete. Evidence reviewed across authorised sections.',
+    has_issues: false,
+    specialist_confidence: 0.75
+  });
+}
 
-    // Show clean observation
-    const display = {
-      current_phase: obs.current_phase,
-      role_instructions: obs.role_instructions ? obs.role_instructions.slice(0, 120) + '…' : undefined,
-      available_actions: obs.available_actions,
-      steps_remaining: obs.steps_remaining,
-      total_steps_remaining: obs.total_steps_remaining,
-      violations_count: obs.violations_count,
-      visible_sections: obs.visible_sections && Object.keys(obs.visible_sections).length
-        ? Object.fromEntries(Object.entries(obs.visible_sections).map(([k,v]) => [k, v?.slice(0,80)+'…']))
-        : undefined,
-      specialist_reports: obs.specialist_reports?.length ? obs.specialist_reports.map(r => ({
-        role: r.specialist_role, has_issues: r.has_issues, confidence: r.confidence,
-        findings: r.findings?.slice(0,80)+'…'
-      })) : undefined,
-      reference_response: obs.reference_response || undefined,
-      verification_result: obs.verification_result || undefined,
-      clarification_response: obs.clarification_response || undefined,
-      read_report_details: obs.read_report_details && Object.keys(obs.read_report_details).length
-        ? obs.read_report_details : undefined,
-      feedback: obs.feedback,
-      reward: rVal,
-      done: obs.done,
-    };
-    // Remove undefined keys
-    Object.keys(display).forEach(k => display[k] === undefined && delete display[k]);
-    setOutput(JSON.stringify(display, null, 2));
+function submitFinalDecision(decision) {
+  const isFraud = decision === 'reject';
+  step({
+    action_type: 'submit_final_decision',
+    decision,
+    fraud_flag: isFraud,
+    confidence: 0.80,
+    fraud_reasoning: isFraud
+      ? 'Credential verification failed. Reference denied employment claim.'
+      : ''
+  });
+}
+
+function setEpisodeDone() {
+  episodeId = null;
+  document.getElementById('phase-badge').textContent = '✅ complete';
+  document.getElementById('phase-badge').style.background = 'rgba(16,185,129,.2)';
+  document.getElementById('phase-badge').style.color = '#6ee7b7';
+  document.getElementById('phase-badge').style.borderColor = 'rgba(16,185,129,.3)';
+}
+
+function updateUI(obs, stepReward, cumReward) {
+  const phase = obs.current_phase || '—';
+  document.getElementById('phase-badge').textContent = phase.replace(/_/g, ' ');
+  document.getElementById('phase-badge').style.background = 'rgba(124,58,237,.2)';
+  document.getElementById('phase-badge').style.color = '#c4b5fd';
+  document.getElementById('phase-badge').style.borderColor = 'rgba(124,58,237,.3)';
+
+  const rVal = typeof stepReward === 'number' ? stepReward : 0;
+  const cum  = typeof cumReward  === 'number' ? cumReward  : rVal;
+  const rDisplay = document.getElementById('reward-display');
+  rDisplay.textContent = `+${cum.toFixed(4)}`;
+  rDisplay.style.color = cum > 0 ? 'var(--green)' : cum < 0 ? 'var(--red)' : 'var(--muted)';
+
+  // Step indicator with colour
+  const stepsLeft = obs.steps_remaining ?? '—';
+  const stepsEl = document.getElementById('steps-left');
+  stepsEl.textContent = stepsLeft;
+  stepsEl.style.color = (stepsLeft <= 1) ? 'var(--red)' : 'var(--green)';
+
+  document.getElementById('total-left').textContent = obs.total_steps_remaining ?? '—';
+  const viol = obs.violations_count ?? 0;
+  const violEl = document.getElementById('violations');
+  violEl.textContent = viol;
+  violEl.style.color = viol > 0 ? 'var(--red)' : 'var(--muted)';
+
+  // Build clean display
+  const display = {
+    current_phase:    obs.current_phase,
+    available_actions: obs.available_actions,
+    steps_remaining:   obs.steps_remaining,
+    total_steps_remaining: obs.total_steps_remaining,
+    violations_count:  obs.violations_count,
+    step_reward:       `+${rVal.toFixed(4)}`,
+    cumulative_reward: `+${cum.toFixed(4)}`,
+  };
+
+  if (obs.role_instructions) {
+    display.role_instructions = obs.role_instructions.slice(0, 150) + '…';
   }
-
-  function setOutput(text) {
-    document.getElementById('obs-output').textContent = text;
+  if (obs.visible_sections && Object.keys(obs.visible_sections).length) {
+    display.visible_sections = Object.fromEntries(
+      Object.entries(obs.visible_sections).map(([k,v]) => [k, v?.slice(0,100)+'…'])
+    );
   }
+  if (obs.specialist_reports?.length) {
+    display.specialist_reports = obs.specialist_reports.map(r => ({
+      role: r.specialist_role,
+      has_issues: r.has_issues,
+      confidence: r.confidence,
+      findings: r.findings?.slice(0,100)+'…'
+    }));
+  }
+  if (obs.reference_response)     display.reference_response    = obs.reference_response;
+  if (obs.verification_result)    display.verification_result   = obs.verification_result;
+  if (obs.clarification_response) display.clarification_response = obs.clarification_response;
+  if (obs.read_report_details && Object.keys(obs.read_report_details).length) {
+    display.read_report_details = obs.read_report_details;
+  }
+  if (obs.feedback) display.feedback = obs.feedback;
+  display.done = obs.done;
+
+  setOutput(JSON.stringify(display, null, 2));
+}
+
+function setOutput(text) {
+  document.getElementById('obs-output').textContent = text;
+}
 </script>
 </body>
 </html>"""
