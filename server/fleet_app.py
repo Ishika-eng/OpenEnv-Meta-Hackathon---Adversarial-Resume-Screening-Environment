@@ -91,10 +91,10 @@ async def home():
   .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
 
   /* ── Pipeline ── */
-  .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; align-items: stretch; margin: 2rem 0; }
+  .pipeline { display: grid; grid-template-columns: 1fr 2rem 1fr 2rem 1fr 2rem 1fr; gap: 0; align-items: stretch; margin: 2rem 0; }
   .agent-card {
     background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem 1rem;
-    position: relative; transition: border-color .2s, transform .2s;
+    position: relative; transition: border-color .2s, transform .2s; min-width: 0;
   }
   .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); }
   .pipeline-arrow {
@@ -177,9 +177,15 @@ async def home():
   .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
 
   /* ── Responsive ── */
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
+    .pipeline { grid-template-columns: 1fr 1.5rem 1fr; }
+    /* Row 1: card → card, Row 2: card → card */
+  }
+  @media (max-width: 600px) {
     .pipeline { grid-template-columns: 1fr; }
     .pipeline-arrow { display: none; }
+  }
+  @media (max-width: 768px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
     .reward-grid, .demo-grid, .links-grid { grid-template-columns: 1fr; }
     .action-grid { grid-template-columns: repeat(3, 1fr); }
