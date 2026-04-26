@@ -271,9 +271,10 @@ Cell 5: ls saved LoRA adapter
 Cell 6: download results zip
 ```
 
-### GRPO Reward Curve
+### GRPO Training Curves
 
-![GRPO Reward Curve](assets/reward_curve.png)
+![GRPO Training Curves — reward rises from 0.736 to 0.850 (left) while policy gradient loss falls and stabilises below 0.05 (right) over 792 training steps](assets/training_curves.png)
+*Left: episode reward (proxy) climbs from 0.736 → 0.850 (+15.5%) over 792 steps. Right: policy gradient loss drops sharply in the first 50 steps and stabilises, confirming the policy is updating without diverging.*
 
 | Metric | Value |
 |:---|:---|
@@ -294,9 +295,11 @@ Cell 6: download results zip
 
 Evaluated against the live HF Space environment — 3 episodes per difficulty tier, comparing the rule-based baseline against the GRPO fine-tuned model.
 
-![Baseline Chart](assets/baseline_chart.png)
+![Baseline Chart — rule-based agent reward by difficulty tier (easy/medium/hard) across 9 live episodes](assets/baseline_chart.png)
+*Rule-based baseline rewards per difficulty tier across 9 live episodes (3 per tier). Hard tier achieves perfect 1.0; easy/medium show variance across seeds.*
 
-![Comparison Chart](assets/comparison_chart.png)
+![Comparison Chart — rule-based baseline vs GRPO fine-tuned model on same 9 episodes, showing near-identical performance](assets/comparison_chart.png)
+*Rule-based (blue) vs GRPO fine-tuned (orange) on identical episodes. The trained model matches the hand-coded expert on medium (+1.7%) and hard (0%) while staying within noise on easy (−3.3%).*
 
 | Agent | Easy | Medium | Hard | **Overall** |
 |:---|:---:|:---:|:---:|:---:|
