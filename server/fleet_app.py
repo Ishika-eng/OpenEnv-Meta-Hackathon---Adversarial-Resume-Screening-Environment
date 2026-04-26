@@ -134,8 +134,16 @@ async def home():
   select:focus, input:focus { outline: none; border-color: var(--accent); }
   .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 0.5rem; }
   .action-btn { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.2); color: #93c5fd; padding: 7px 6px; border-radius: 6px; font-size: 0.72rem; cursor: pointer; transition: all .2s; font-family: var(--mono); }
-  .action-btn:hover { background: rgba(59,130,246,.2); border-color: var(--accent); }
-  .action-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .action-btn:hover:not(:disabled) { background: rgba(59,130,246,.2); border-color: var(--accent); }
+  .action-btn:disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
+  .action-btn-submit { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.3); color: #6ee7b7; }
+  .action-btn-submit:hover:not(:disabled) { background: rgba(16,185,129,.22); border-color: #10b981; }
+  .action-btn-reject { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); color: #fca5a5; }
+  .action-btn-reject:hover:not(:disabled) { background: rgba(239,68,68,.22); border-color: #ef4444; }
+  .action-btn-accept { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.3); color: #6ee7b7; }
+  .action-btn-accept:hover:not(:disabled) { background: rgba(16,185,129,.22); border-color: #10b981; }
+  .action-phase-group { display:none; }
+  .action-phase-group.active { display:block; }
   .demo-output { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; }
   .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
   .output-header h4 { font-size: 0.85rem; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
@@ -332,23 +340,67 @@ async def home():
         </div>
         <button class="btn btn-primary" style="width:100%;margin-bottom:1rem;" onclick="resetEpisode()">↺ Reset Episode</button>
 
-        <h4 style="margin-bottom:0.6rem;">Actions</h4>
-        <div class="action-grid">
-          <button class="action-btn" onclick="step({action_type:'verify_credential'})" id="btn-verify">verify_credential</button>
-          <button class="action-btn" onclick="step({action_type:'check_reference',reference_id:'ref2'})" id="btn-ref2">check_reference ref2</button>
-          <button class="action-btn" onclick="step({action_type:'check_reference',reference_id:'ref1'})" id="btn-ref1">check_reference ref1</button>
-          <button class="action-btn" onclick="step({action_type:'view_section',section:'experience'})" id="btn-exp">view experience</button>
-          <button class="action-btn" onclick="step({action_type:'view_section',section:'education'})" id="btn-edu">view education</button>
-          <button class="action-btn" onclick="step({action_type:'view_section',section:'skills'})" id="btn-skills">view skills</button>
-          <button class="action-btn" onclick="step({action_type:'view_section',section:'header'})" id="btn-header">view header</button>
-          <button class="action-btn" onclick="step({action_type:'view_section',section:'references'})" id="btn-refs">view references</button>
-          <button class="action-btn" onclick="step({action_type:'ask_clarification',question:'Can you clarify your employment dates?'})" id="btn-clarify">ask_clarification</button>
-          <button class="action-btn" onclick="submitSpecialistReport()" id="btn-submit-spec">submit_specialist_report</button>
-          <button class="action-btn" onclick="step({action_type:'read_reports',report_target:'fraud_specialist'})" id="btn-read-fraud">read fraud report</button>
-          <button class="action-btn" onclick="step({action_type:'read_reports',report_target:'skills_specialist'})" id="btn-read-skills">read skills report</button>
-          <button class="action-btn" onclick="step({action_type:'read_reports',report_target:'timeline_specialist'})" id="btn-read-timeline">read timeline report</button>
-          <button class="action-btn" onclick="submitFinalDecision('reject')" id="btn-reject">submit reject</button>
-          <button class="action-btn" onclick="submitFinalDecision('accept')" id="btn-accept">submit accept</button>
+        <h4 style="margin-bottom:0.6rem;">Actions <span id="phase-hint" style="font-size:0.7rem;color:var(--muted);font-weight:400;"></span></h4>
+
+        <!-- Fraud Specialist actions -->
+        <div class="action-phase-group" id="grp-fraud" style="display:none;">
+          <div class="action-grid">
+            <button class="action-btn" data-action="verify_credential" onclick="step({action_type:'verify_credential'})" id="btn-verify">🔍 verify_credential</button>
+            <button class="action-btn" data-action="check_reference" onclick="step({action_type:'check_reference',reference_id:'ref2'})" id="btn-ref2">📞 check_reference ref2</button>
+            <button class="action-btn" data-action="check_reference" onclick="step({action_type:'check_reference',reference_id:'ref1'})" id="btn-ref1">📞 check_reference ref1</button>
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'header'})" id="btn-header">📄 view header</button>
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'references'})" id="btn-refs">📄 view references</button>
+          </div>
+          <button class="action-btn action-btn-submit" data-action="submit_specialist_report" onclick="submitSpecialistReport()" id="btn-submit-spec-fraud" style="width:100%;margin-top:0.5rem;">✅ submit specialist report</button>
+        </div>
+
+        <!-- Skills Specialist actions -->
+        <div class="action-phase-group" id="grp-skills" style="display:none;">
+          <div class="action-grid">
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'experience'})" id="btn-exp">📄 view experience</button>
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'education'})" id="btn-edu">📄 view education</button>
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'skills'})" id="btn-skills">📄 view skills</button>
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'projects'})" id="btn-projects">📄 view projects</button>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <input id="clarify-question-skills" type="text" placeholder="Clarification question…"
+              style="width:100%;padding:0.4rem 0.6rem;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:var(--text);font-size:0.8rem;margin-bottom:0.4rem;">
+            <button class="action-btn" data-action="ask_clarification" onclick="askClarification('skills')" style="width:100%;">💬 ask_clarification</button>
+          </div>
+          <button class="action-btn action-btn-submit" data-action="submit_specialist_report" onclick="submitSpecialistReport()" style="width:100%;margin-top:0.4rem;">✅ submit specialist report</button>
+        </div>
+
+        <!-- Timeline Specialist actions -->
+        <div class="action-phase-group" id="grp-timeline" style="display:none;">
+          <div class="action-grid">
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'header'})" id="btn-header-tl">📄 view header</button>
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'summary'})" id="btn-summary">📄 view summary</button>
+            <button class="action-btn" data-action="view_section" onclick="step({action_type:'view_section',section:'experience'})" id="btn-exp-tl">📄 view experience</button>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <input id="clarify-question-timeline" type="text" placeholder="Clarification question…"
+              style="width:100%;padding:0.4rem 0.6rem;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:var(--text);font-size:0.8rem;margin-bottom:0.4rem;">
+            <button class="action-btn" data-action="ask_clarification" onclick="askClarification('timeline')" style="width:100%;">💬 ask_clarification</button>
+          </div>
+          <button class="action-btn action-btn-submit" data-action="submit_specialist_report" onclick="submitSpecialistReport()" style="width:100%;margin-top:0.4rem;">✅ submit specialist report</button>
+        </div>
+
+        <!-- Overseer actions -->
+        <div class="action-phase-group" id="grp-overseer" style="display:none;">
+          <div class="action-grid">
+            <button class="action-btn" data-action="read_reports" onclick="step({action_type:'read_reports',report_target:'fraud_specialist'})" id="btn-read-fraud">📋 read fraud report</button>
+            <button class="action-btn" data-action="read_reports" onclick="step({action_type:'read_reports',report_target:'skills_specialist'})" id="btn-read-skills">📋 read skills report</button>
+            <button class="action-btn" data-action="read_reports" onclick="step({action_type:'read_reports',report_target:'timeline_specialist'})" id="btn-read-timeline">📋 read timeline report</button>
+          </div>
+          <div style="margin-top:0.5rem;display:flex;gap:0.4rem;">
+            <button class="action-btn action-btn-reject" data-action="submit_final_decision" onclick="submitFinalDecision('reject')" id="btn-reject" style="flex:1;">❌ submit reject</button>
+            <button class="action-btn action-btn-accept" data-action="submit_final_decision" onclick="submitFinalDecision('accept')" id="btn-accept" style="flex:1;">✅ submit accept</button>
+          </div>
+        </div>
+
+        <!-- Pre-episode placeholder -->
+        <div id="grp-idle" style="color:var(--muted);font-size:0.8rem;padding:0.8rem 0;">
+          Reset an episode to unlock actions.
         </div>
       </div>
 
@@ -449,154 +501,275 @@ async def home():
 
 <script>
 const BASE = window.location.origin;
-let episodeId = null;
+let episodeId   = null;
 let totalReward = 0;
 
+// Session state — updated after every step
+let sessionState = {
+  phase: null,
+  availableActions: [],
+  verificationResult: '',
+  referenceResponse: '',
+  specialistReports: [],
+  sectionsViewed: {},        // section → text snippet
+  clarificationResponse: '',
+};
+
+// ─── Reset ────────────────────────────────────────────────────────────────────
 async function resetEpisode() {
   const taskType = document.getElementById('taskType').value;
   const seed = parseInt(document.getElementById('seed').value) || 42;
-  episodeId = `fleet-${taskType}-${seed}-${Date.now()}`;
+  episodeId   = `fleet-${taskType}-${seed}-${Date.now()}`;
   totalReward = 0;
+  sessionState = { phase:null, availableActions:[], verificationResult:'',
+                   referenceResponse:'', specialistReports:[], sectionsViewed:{}, clarificationResponse:'' };
   document.getElementById('reward-display').textContent = '0.0000';
-  setOutput('Resetting episode...');
+  setOutput('Resetting episode…');
   try {
     const r = await fetch(`${BASE}/reset`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({task_type: taskType, seed, episode_id: episodeId})
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({task_type:taskType, seed, episode_id:episodeId})
     });
     const data = await r.json();
     const obs = data.observation || data;
-    updateUI(obs, 0);
-  } catch(e) {
-    setOutput(`Error: ${e.message}`);
-  }
+    updateUI(obs, 0, 0);
+  } catch(e) { setOutput(`Error: ${e.message}`); }
 }
 
+// ─── Step ─────────────────────────────────────────────────────────────────────
 async function step(action) {
   if (!episodeId) {
     setOutput('⚠️ Click "↺ Reset Episode" first to start an episode.');
     return;
   }
-  // Wrap action exactly as inference_fleet.py does
   const cleanAction = Object.fromEntries(
-    Object.entries(action).filter(([_, v]) => v !== null && v !== undefined)
+    Object.entries(action).filter(([_, v]) => v !== null && v !== undefined && v !== '')
   );
   cleanAction.episode_id = episodeId;
-  const payload = {action: cleanAction, timeout_s: 30};
 
-  setOutput('Sending action...');
+  setOutput('Sending action…');
   try {
     const r = await fetch(`${BASE}/step`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({action: cleanAction, timeout_s: 30})
     });
     const data = await r.json();
-    const obs = data.observation || data;
+    const obs  = data.observation || data;
     const stepReward = data.reward ?? obs.reward ?? 0;
     totalReward += stepReward;
-    updateUI(obs, stepReward, totalReward);
-    if (obs.done || obs.current_phase === 'complete') {
-      setEpisodeDone();
+
+    // Update session state from response
+    if (obs.verification_result)    sessionState.verificationResult   = obs.verification_result;
+    if (obs.reference_response)     sessionState.referenceResponse    = obs.reference_response;
+    if (obs.clarification_response) sessionState.clarificationResponse = obs.clarification_response;
+    if (obs.visible_sections) {
+      Object.assign(sessionState.sectionsViewed, obs.visible_sections);
     }
-  } catch(e) {
-    setOutput(`Error: ${e.message}`);
-  }
+    if (obs.specialist_reports?.length) {
+      sessionState.specialistReports = obs.specialist_reports;
+    }
+
+    updateUI(obs, stepReward, totalReward);
+    if (obs.done || obs.current_phase === 'complete') setEpisodeDone();
+  } catch(e) { setOutput(`Error: ${e.message}`); }
 }
 
+// ─── Smart specialist report submission ───────────────────────────────────────
 function submitSpecialistReport() {
+  const vr  = sessionState.verificationResult || '';
+  const rr  = sessionState.referenceResponse  || '';
+  const cr  = sessionState.clarificationResponse || '';
+  const phase = sessionState.phase || '';
+
+  // Detect issues from what was found this phase
+  const credFailed   = vr.includes('FAILED') || vr.toLowerCase().includes('cannot verify');
+  const refDenied    = rr.toLowerCase().includes('deny') || rr.toLowerCase().includes('denied')
+                    || rr.toLowerCase().includes('not in our system') || rr.toLowerCase().includes('no record');
+  const has_issues   = credFailed || refDenied;
+
+  // Build findings from actual evidence
+  const parts = [];
+  if (vr)   parts.push(`Credential check: ${vr.slice(0, 120)}`);
+  if (rr)   parts.push(`Reference response: ${rr.slice(0, 120)}`);
+  if (cr)   parts.push(`Clarification: ${cr.slice(0, 120)}`);
+  const sectionNames = Object.keys(sessionState.sectionsViewed);
+  if (sectionNames.length) parts.push(`Sections reviewed: ${sectionNames.join(', ')}`);
+  if (!parts.length) parts.push('Investigation complete. No outstanding evidence gathered.');
+
+  const findings = parts.join(' | ');
+  const confidence = has_issues ? 0.88 : 0.72;
+
   step({
     action_type: 'submit_specialist_report',
-    findings: 'Investigation complete. Evidence reviewed across authorised sections.',
-    has_issues: false,
-    specialist_confidence: 0.75
+    findings,
+    has_issues,
+    specialist_confidence: confidence,
   });
 }
 
+// ─── ask_clarification with typed question ────────────────────────────────────
+function askClarification(group) {
+  const inputId = group === 'skills' ? 'clarify-question-skills' : 'clarify-question-timeline';
+  const el = document.getElementById(inputId);
+  const question = el ? el.value.trim() : '';
+  if (!question) {
+    setOutput('⚠️ Please type a clarification question first.');
+    return;
+  }
+  step({ action_type: 'ask_clarification', question });
+}
+
+// ─── Smart final decision ─────────────────────────────────────────────────────
 function submitFinalDecision(decision) {
-  const isFraud = decision === 'reject';
+  const reports    = sessionState.specialistReports || [];
+  const issueCount = reports.filter(r => r.has_issues).length;
+  const isFraud    = decision === 'reject';
+
+  // Build reasoning from what specialists actually reported
+  const fraudReports = reports
+    .filter(r => r.has_issues)
+    .map(r => `${r.specialist_role}: ${(r.findings || '').slice(0, 80)}`);
+
+  const fraud_reasoning = isFraud
+    ? (fraudReports.length
+        ? 'Fraud flagged by: ' + fraudReports.join('; ')
+        : 'Credential verification failed or reference denied employment claim.')
+    : '';
+
+  // Calibrate confidence based on specialist agreement
+  const confidence = issueCount >= 2 ? 0.92
+                   : issueCount === 1 ? 0.75
+                   : (isFraud        ? 0.60 : 0.85);
+
   step({
     action_type: 'submit_final_decision',
     decision,
     fraud_flag: isFraud,
-    confidence: 0.80,
-    fraud_reasoning: isFraud
-      ? 'Credential verification failed. Reference denied employment claim.'
-      : ''
+    confidence,
+    fraud_reasoning,
   });
 }
 
-function setEpisodeDone() {
-  episodeId = null;
-  document.getElementById('phase-badge').textContent = '✅ complete';
-  document.getElementById('phase-badge').style.background = 'rgba(16,185,129,.2)';
-  document.getElementById('phase-badge').style.color = '#6ee7b7';
-  document.getElementById('phase-badge').style.borderColor = 'rgba(16,185,129,.3)';
+// ─── Phase-aware UI update ────────────────────────────────────────────────────
+const PHASE_GROUP = {
+  fraud_specialist:    'grp-fraud',
+  skills_specialist:   'grp-skills',
+  timeline_specialist: 'grp-timeline',
+  overseer:            'grp-overseer',
+};
+
+function showPhaseGroup(phase) {
+  // Hide all groups and idle placeholder
+  ['grp-fraud','grp-skills','grp-timeline','grp-overseer','grp-idle']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+
+  const groupId = PHASE_GROUP[phase];
+  if (groupId) {
+    const el = document.getElementById(groupId);
+    if (el) el.style.display = 'block';
+  }
+
+  // Update hint label
+  const hints = {
+    fraud_specialist:    '— Fraud Specialist',
+    skills_specialist:   '— Skills Specialist',
+    timeline_specialist: '— Timeline Specialist',
+    overseer:            '— Overseer',
+    complete:            '— Episode Complete',
+  };
+  const hint = document.getElementById('phase-hint');
+  if (hint) hint.textContent = hints[phase] || '';
+}
+
+function disableUnavailableButtons(availableActions) {
+  // Disable buttons whose data-action is NOT in available_actions
+  document.querySelectorAll('.action-btn[data-action]').forEach(btn => {
+    const needed = btn.getAttribute('data-action');
+    btn.disabled = !availableActions.includes(needed);
+  });
 }
 
 function updateUI(obs, stepReward, cumReward) {
   const phase = obs.current_phase || '—';
-  document.getElementById('phase-badge').textContent = phase.replace(/_/g, ' ');
-  document.getElementById('phase-badge').style.background = 'rgba(124,58,237,.2)';
-  document.getElementById('phase-badge').style.color = '#c4b5fd';
-  document.getElementById('phase-badge').style.borderColor = 'rgba(124,58,237,.3)';
+  sessionState.phase           = phase;
+  sessionState.availableActions = obs.available_actions || [];
 
+  // Phase badge
+  const badge = document.getElementById('phase-badge');
+  badge.textContent = phase.replace(/_/g,' ');
+  if (phase === 'complete') {
+    badge.style.cssText += ';background:rgba(16,185,129,.2);color:#6ee7b7;border-color:rgba(16,185,129,.3);';
+  } else {
+    badge.style.cssText += ';background:rgba(124,58,237,.2);color:#c4b5fd;border-color:rgba(124,58,237,.3);';
+  }
+
+  // Reward
   const rVal = typeof stepReward === 'number' ? stepReward : 0;
   const cum  = typeof cumReward  === 'number' ? cumReward  : rVal;
   const rDisplay = document.getElementById('reward-display');
-  rDisplay.textContent = `+${cum.toFixed(4)}`;
+  rDisplay.textContent = cum >= 0 ? `+${cum.toFixed(4)}` : cum.toFixed(4);
   rDisplay.style.color = cum > 0 ? 'var(--green)' : cum < 0 ? 'var(--red)' : 'var(--muted)';
 
-  // Step indicator with colour
+  // Step counters
   const stepsLeft = obs.steps_remaining ?? '—';
-  const stepsEl = document.getElementById('steps-left');
-  stepsEl.textContent = stepsLeft;
-  stepsEl.style.color = (stepsLeft <= 1) ? 'var(--red)' : 'var(--green)';
-
+  const stepsEl   = document.getElementById('steps-left');
+  stepsEl.textContent  = stepsLeft;
+  stepsEl.style.color  = (stepsLeft <= 1) ? 'var(--red)' : 'var(--green)';
   document.getElementById('total-left').textContent = obs.total_steps_remaining ?? '—';
-  const viol = obs.violations_count ?? 0;
-  const violEl = document.getElementById('violations');
+  const viol    = obs.violations_count ?? 0;
+  const violEl  = document.getElementById('violations');
   violEl.textContent = viol;
   violEl.style.color = viol > 0 ? 'var(--red)' : 'var(--muted)';
 
-  // Build clean display
-  const display = {
-    current_phase:    obs.current_phase,
-    available_actions: obs.available_actions,
-    steps_remaining:   obs.steps_remaining,
-    total_steps_remaining: obs.total_steps_remaining,
-    violations_count:  obs.violations_count,
-    step_reward:       `+${rVal.toFixed(4)}`,
-    cumulative_reward: `+${cum.toFixed(4)}`,
-  };
+  // Show only this phase's action group and gate buttons
+  showPhaseGroup(phase);
+  disableUnavailableButtons(sessionState.availableActions);
 
-  if (obs.role_instructions) {
-    display.role_instructions = obs.role_instructions.slice(0, 150) + '…';
-  }
-  if (obs.visible_sections && Object.keys(obs.visible_sections).length) {
+  // Build observation display
+  const display = {
+    current_phase:         obs.current_phase,
+    available_actions:     obs.available_actions,
+    steps_remaining:       obs.steps_remaining,
+    total_steps_remaining: obs.total_steps_remaining,
+    violations_count:      obs.violations_count,
+    step_reward:           `${rVal >= 0 ? '+' : ''}${rVal.toFixed(4)}`,
+    cumulative_reward:     `${cum >= 0 ? '+' : ''}${cum.toFixed(4)}`,
+  };
+  if (obs.role_instructions)
+    display.role_instructions = obs.role_instructions.slice(0,150) + '…';
+  if (obs.visible_sections && Object.keys(obs.visible_sections).length)
     display.visible_sections = Object.fromEntries(
-      Object.entries(obs.visible_sections).map(([k,v]) => [k, v?.slice(0,100)+'…'])
+      Object.entries(obs.visible_sections).map(([k,v]) => [k, (v||'').slice(0,120)+'…'])
     );
-  }
-  if (obs.specialist_reports?.length) {
+  if (obs.specialist_reports?.length)
     display.specialist_reports = obs.specialist_reports.map(r => ({
-      role: r.specialist_role,
-      has_issues: r.has_issues,
-      confidence: r.confidence,
-      findings: r.findings?.slice(0,100)+'…'
+      role: r.specialist_role, has_issues: r.has_issues,
+      confidence: r.confidence, findings: (r.findings||'').slice(0,100)+'…'
     }));
-  }
-  if (obs.reference_response)     display.reference_response    = obs.reference_response;
-  if (obs.verification_result)    display.verification_result   = obs.verification_result;
-  if (obs.clarification_response) display.clarification_response = obs.clarification_response;
-  if (obs.read_report_details && Object.keys(obs.read_report_details).length) {
+  if (obs.reference_response)      display.reference_response     = obs.reference_response;
+  if (obs.verification_result)     display.verification_result    = obs.verification_result;
+  if (obs.clarification_response)  display.clarification_response = obs.clarification_response;
+  if (obs.read_report_details && Object.keys(obs.read_report_details).length)
     display.read_report_details = obs.read_report_details;
-  }
   if (obs.feedback) display.feedback = obs.feedback;
   display.done = obs.done;
 
   setOutput(JSON.stringify(display, null, 2));
+}
+
+function setEpisodeDone() {
+  episodeId = null;
+  showPhaseGroup('complete');
+  const badge = document.getElementById('phase-badge');
+  badge.textContent = '✅ complete';
+  badge.style.background   = 'rgba(16,185,129,.2)';
+  badge.style.color        = '#6ee7b7';
+  badge.style.borderColor  = 'rgba(16,185,129,.3)';
 }
 
 function setOutput(text) {
