@@ -266,6 +266,9 @@ https://github.com/Ishika-eng/OpenEnv-Meta-Hackathon---Adversarial-Resume-Screen
 📓 **Training Notebook (Colab):**
 https://github.com/Ishika-eng/OpenEnv-Meta-Hackathon---Adversarial-Resume-Screening-Environment/blob/main/train_grpo_fleet.ipynb
 
+**Walkthrough:** 
+https://drive.google.com/file/d/1NUCGdpQtAeELpSXVeVyoMfJLg6TllXlu/view 
+
 ---
 
 ## One last thing — why does this actually matter?
