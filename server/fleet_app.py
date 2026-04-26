@@ -448,7 +448,7 @@ async def home():
 </footer>
 
 <script>
-  const BASE = window.location.origin;
+const BASE = window.location.origin;
 let episodeId = null;
 let totalReward = 0;
 
