@@ -2,19 +2,22 @@
 train_grpo.py — GRPO training for the Hiring Fleet environment.
 
 HOW IT WORKS:
-  Step 1 (offline): Use a rule-based agent to walk through the environment
-                    and collect diverse observations (one per phase per episode).
-                    No model/GPU needed for this step.
+  Step 1 (data collection): A rule-based agent walks 36 episodes on the live
+                    environment (ENV_URL), collecting one observation prompt per
+                    phase step. Each record also stores the task_type, seed, and
+                    replay_actions needed to reconstruct the exact environment state.
 
-  Step 2 (training): GRPOTrainer generates 8 completions per prompt internally,
-                     calls our reward_fn to score each one, then updates the model.
-                     The reward_fn does NOT call the live environment — it scores
-                     the completion directly (valid JSON, correct phase action, etc.)
+  Step 2 (online GRPO training): GRPOTrainer generates completions per prompt.
+                     reward_fn scores each completion by:
+                       (a) Calling the LIVE environment: reset → replay prior
+                           actions → submit generated action → get real step reward.
+                       (b) Falling back to a proxy score (format + role compliance)
+                           only if the live call fails (timeout, parse error).
 
-This is the correct GRPOTrainer workflow: dataset = prompts only, reward_fn scores
-completions. The trainer handles generation internally.
+                     This means gradient updates are driven by real environment
+                     rewards, not a static proxy.
 
-Usage on Kaggle (T4 GPU, 16 GB):
+Usage on Colab/Kaggle (T4 GPU):
     Set ENV_URL in the cell above, then: main()
 """
 
@@ -235,6 +238,7 @@ def collect_prompts(n_episodes: int) -> list[dict]:
         obs = data.get("observation") or data   # handle flat or nested response
 
         steps = 0
+        replay_actions: list[dict] = []   # actions taken so far — used by reward_fn for live replay
         while steps < 20:
             phase = obs.get("current_phase", "complete")
             if phase in ("complete", None):
@@ -244,16 +248,22 @@ def collect_prompts(n_episodes: int) -> list[dict]:
                 break
 
             # Store this observation as a training prompt
+            # replay_actions lets reward_fn reconstruct this exact state in the
+            # live environment so it can score generated actions with real rewards.
             collected.append({
                 "prompt":            obs_to_prompt(obs),
                 "phase":             phase,
                 "available_actions": json.dumps(available),
                 "steps_remaining":   obs.get("steps_remaining", 0),
+                "task_type":         task,
+                "seed":              seed,
+                "replay_actions":    json.dumps(replay_actions),
             })
 
             # Take rule-based action
             action = rule_action(obs)
             action["episode_id"] = ep_id
+            replay_actions.append({k: v for k, v in action.items() if k != "episode_id"})
 
             try:
                 resp = requests.post(
@@ -280,8 +290,62 @@ def collect_prompts(n_episodes: int) -> list[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Reward function  — called by GRPOTrainer for each generated completion
-# Does NOT call the live environment. Scores the action quality directly.
+# Live environment scorer — replays episode state then applies generated action
+# ─────────────────────────────────────────────────────────────────────────────
+def live_env_score(completion: str, task_type: str, seed: int,
+                   replay_actions: list) -> float | None:
+    """Score a completion by executing it in the live environment.
+
+    Approach:
+      1. Reset the environment with the same task_type + seed (deterministic).
+      2. Replay the exact rule-based actions that led to the current state.
+      3. Parse the model's completion as a JSON action and submit it.
+      4. Return the real step reward from the environment.
+
+    Returns None on any network/parse failure so the caller can fall back
+    to the proxy reward instead of crashing the training run.
+    """
+    ep_id = f"score-{task_type}-{seed}-{random.randint(0, 99999)}"
+    try:
+        # Step 1: reset
+        r = requests.post(
+            f"{ENV_URL}/reset",
+            json={"task_type": task_type, "seed": seed, "episode_id": ep_id},
+            timeout=15,
+        )
+        if not r.ok:
+            return None
+
+        # Step 2: replay prior actions to reconstruct current state
+        for prior in replay_actions:
+            act = {**prior, "episode_id": ep_id}
+            r = requests.post(f"{ENV_URL}/step", json={"action": act}, timeout=15)
+            if not r.ok:
+                return None
+
+        # Step 3: parse and submit the model's generated action
+        text = completion.strip()
+        # strip markdown code fences if present
+        if "```" in text:
+            text = re.sub(r"```[a-z]*\n?", "", text).strip()
+        action = json.loads(text)
+        action["episode_id"] = ep_id
+
+        r = requests.post(f"{ENV_URL}/step", json={"action": action}, timeout=15)
+        if not r.ok:
+            return None
+
+        data = r.json()
+        return float(data.get("reward", 0.0))
+
+    except Exception:
+        return None   # fall back to proxy
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Reward function  — called by GRPOTrainer for each generated completion.
+# Primary: live environment step reward (real signal).
+# Fallback: proxy score (format + action-type compliance) when env is unreachable.
 # ─────────────────────────────────────────────────────────────────────────────
 def score_completion(completion: str, phase: str, available_actions: list) -> float:
     """
@@ -529,12 +593,25 @@ def score_completion_detailed(completion: str, phase: str, available_actions: li
 def make_reward_fn(records: list[dict]):
     """Build a reward function compatible with GRPOTrainer.
 
+    Scoring priority:
+      1. Call the live environment: reset → replay → apply generated action → real reward.
+      2. If the live call fails (timeout, parse error, env sleeping), fall back to
+         the proxy scorer (format + role compliance) so training never crashes.
+
     As a side effect, updates the module-level _tracker with per-component
     breakdowns so RichMonitoringCallback can log individual metrics.
     """
     prompt_meta = {}
     for r in records:
-        prompt_meta[r["prompt"]] = (r["phase"], json.loads(r["available_actions"]))
+        prompt_meta[r["prompt"]] = {
+            "phase":           r["phase"],
+            "available":       json.loads(r["available_actions"]),
+            "task_type":       r.get("task_type", "easy"),
+            "seed":            r.get("seed", 42),
+            "replay_actions":  json.loads(r.get("replay_actions", "[]")),
+        }
+
+    live_hits = [0]   # mutable counter for logging
 
     def reward_fn(completions, prompts=None, **kwargs):
         rewards = []
@@ -545,10 +622,31 @@ def make_reward_fn(records: list[dict]):
                     if isinstance(msg, dict) and msg.get("role") == "user":
                         prompt_text = msg.get("content", "")
                         break
-            phase, available = prompt_meta.get(prompt_text, ("fraud_specialist", []))
-            bd = score_completion_detailed(completion, phase, available)
-            _tracker.update(completion, bd)
-            rewards.append(bd["total"])
+
+            meta      = prompt_meta.get(prompt_text, {})
+            phase     = meta.get("phase", "fraud_specialist")
+            available = meta.get("available", [])
+
+            # ── Primary: live environment reward ──────────────────────────────
+            live_reward = live_env_score(
+                completion,
+                task_type      = meta.get("task_type", "easy"),
+                seed           = meta.get("seed", 42),
+                replay_actions = meta.get("replay_actions", []),
+            )
+
+            if live_reward is not None:
+                live_hits[0] += 1
+                rewards.append(live_reward)
+                # Still track proxy breakdown for monitoring dashboards
+                bd = score_completion_detailed(completion, phase, available)
+                _tracker.update(completion, bd)
+            else:
+                # ── Fallback: proxy reward ────────────────────────────────────
+                bd = score_completion_detailed(completion, phase, available)
+                _tracker.update(completion, bd)
+                rewards.append(bd["total"])
+
         return rewards
 
     return reward_fn
