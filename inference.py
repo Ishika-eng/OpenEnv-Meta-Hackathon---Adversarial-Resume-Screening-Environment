@@ -172,8 +172,6 @@ class EnvHTTPClient:
             clean_action["episode_id"] = self._current_episode_id
         payload = {"action": clean_action, "timeout_s": 30}
         resp = requests.post(f"{self.base_url}/step", json=payload, timeout=30)
-        if resp.status_code == 422:
-            print(f"DEBUG — 422 Response Body: {resp.text}")
         resp.raise_for_status()
         data = resp.json()
         obs = data.get("observation", data)

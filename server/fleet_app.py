@@ -25,706 +25,531 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-INTERACTIVE_DEMO_HTML = """<!DOCTYPE html>
+@app.get("/", response_class=HTMLResponse)
+@app.get("/web", response_class=HTMLResponse)
+async def home():
+    """Home page for the Hugging Face Space."""
+    return r"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hiring Fleet — Interactive Demo</title>
+<title>Hiring Fleet — AI Oversight System</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
-
   :root {
-    --bg: #0b0f1a;
-    --surface: #111827;
-    --surface2: #1a2332;
-    --border: #1e2d45;
-    --accent: #3b82f6;
-    --accent2: #7c3aed;
-    --green: #10b981;
-    --red: #ef4444;
-    --yellow: #f59e0b;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --mono: 'JetBrains Mono', monospace;
-    --sans: 'Syne', sans-serif;
+    --bg:       #0a0f1e;
+    --surface:  #111827;
+    --card:     #1a2235;
+    --border:   #1e3a5f;
+    --accent:   #3b82f6;
+    --purple:   #7c3aed;
+    --green:    #10b981;
+    --yellow:   #f59e0b;
+    --red:      #ef4444;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --mono:     'JetBrains Mono', 'Fira Code', monospace;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; line-height: 1.6; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-  }
-
-  header {
-    padding: 16px 32px;
+  /* ── Nav ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,15,30,0.92); backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px;
   }
-  header .badge {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-  header h2 {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text);
-    flex: 1;
-  }
-  header p {
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
+  .nav-brand { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+  .nav-links { display: flex; gap: 1.5rem; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.875rem; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-pill { background: var(--green); color: #000; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
 
-  .demo-section {
-    padding: 24px 32px 8px;
-  }
-  .demo-section h1 {
-    font-size: 1.6rem;
-    font-weight: 800;
-    margin-bottom: 4px;
-  }
-  .demo-section .sub {
-    font-size: 0.875rem;
-    color: var(--muted);
-  }
+  /* ── Layout ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+  section { padding: 4rem 0; }
+  section + section { border-top: 1px solid var(--border); }
 
-  .layout {
-    display: grid;
-    grid-template-columns: 340px 1fr;
-    gap: 16px;
-    padding: 16px 32px 32px;
-    min-height: calc(100vh - 160px);
-  }
+  /* ── Hero ── */
+  .hero { padding: 5rem 0 4rem; text-align: center; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(59,130,246,.15); border: 1px solid rgba(59,130,246,.3); color: var(--accent); padding: 4px 14px; border-radius: 20px; font-size: 0.78rem; margin-bottom: 1.5rem; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.15; margin-bottom: 1rem; }
+  .hero h1 span { background: linear-gradient(135deg, #3b82f6, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero-sub { color: var(--muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem; }
+  .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 10px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
+  /* ── Stats row ── */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 3rem; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; text-align: center; }
+  .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
 
-  .panel-title {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
+  /* ── Pipeline ── */
+  .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; align-items: stretch; margin: 2rem 0; }
+  .agent-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem 1rem;
+    position: relative; transition: border-color .2s, transform .2s;
   }
-
-  label {
-    font-size: 0.75rem;
-    color: var(--muted);
-    display: block;
-    margin-bottom: 4px;
-    font-family: var(--mono);
-  }
-
-  select, input[type="number"] {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.82rem;
-    padding: 8px 10px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  select:focus, input[type="number"]:focus {
-    border-color: var(--accent);
-  }
-
-  .btn-reset {
-    width: 100%;
-    padding: 11px;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    font-family: var(--sans);
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: background 0.15s, transform 0.1s;
-  }
-  .btn-reset:hover { background: #2563eb; }
-  .btn-reset:active { transform: scale(0.98); }
-  .btn-reset:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
-
-  .actions-title {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 2px;
-  }
-
-  .actions-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-
-  .btn-action {
-    padding: 7px 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    cursor: pointer;
-    text-align: center;
-    transition: border-color 0.15s, background 0.15s;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .btn-action:hover:not(:disabled) {
-    border-color: var(--accent);
-    background: rgba(59,130,246,0.08);
-  }
-  .btn-action:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-
-  /* Observation panel */
-  .obs-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .obs-stats {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    font-family: var(--mono);
-    font-size: 0.72rem;
-  }
-  .stat-item { display: flex; align-items: center; gap: 5px; }
-  .stat-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .dot-blue { background: var(--accent); }
-  .dot-green { background: var(--green); }
-  .dot-red { background: var(--red); }
-
-  .ctrl-row { display: flex; gap: 6px; }
-  .ctrl-btn {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
+  .agent-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .pipeline-arrow {
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem;
-    transition: opacity 0.15s;
+    color: var(--muted); font-size: 1.2rem; flex-shrink: 0;
   }
-  .ctrl-btn:hover { opacity: 0.8; }
+  .agent-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .agent-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.3rem; }
+  .agent-desc { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.7rem; }
+  .agent-tools { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tool-chip { background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.25); color: #93c5fd; padding: 2px 7px; border-radius: 4px; font-size: 0.65rem; font-family: var(--mono); }
+  .agent-sections { font-size: 0.7rem; color: var(--muted); margin-top: 6px; }
+  .phase-num { position: absolute; top: 10px; right: 10px; background: var(--purple); color: #fff; width: 20px; height: 20px; border-radius: 50%; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 
-  .obs-output {
-    flex: 1;
-    background: #070b12;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 16px;
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    line-height: 1.6;
-    overflow-y: auto;
-    min-height: 400px;
-    max-height: 60vh;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .obs-output .prompt-hint {
-    color: var(--muted);
-    font-style: italic;
-  }
-  .obs-output .key { color: var(--accent); }
-  .obs-output .val-str { color: #a5f3fc; }
-  .obs-output .val-num { color: var(--yellow); }
-  .obs-output .val-bool-t { color: var(--green); }
-  .obs-output .val-bool-f { color: var(--red); }
-  .obs-output .section-hdr { color: var(--accent2); font-weight: 600; }
-  .obs-output .reward-pos { color: var(--green); font-weight: 600; }
-  .obs-output .reward-neg { color: var(--red); font-weight: 600; }
-  .obs-output .feedback { color: var(--yellow); }
-  .obs-output .done-msg { color: var(--green); font-weight: 600; }
+  /* ── Reward ── */
+  .reward-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .reward-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .reward-card h4 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 1rem; }
+  .reward-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.05); font-size: 0.82rem; }
+  .reward-row:last-child { border-bottom: none; }
+  .reward-name { color: var(--text); font-family: var(--mono); font-size: 0.78rem; }
+  .reward-val { font-weight: 700; color: var(--green); font-size: 0.85rem; }
+  .reward-val.neg { color: var(--red); }
+  .sub-fn { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.05); font-size: 0.82rem; }
+  .sub-fn:last-child { border-bottom: none; }
+  .fn-letter { width: 22px; height: 22px; border-radius: 4px; background: var(--purple); color: #fff; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .fn-name { font-family: var(--mono); font-size: 0.75rem; color: #93c5fd; flex: 1; }
+  .fn-max { color: var(--green); font-weight: 700; font-size: 0.8rem; }
 
-  .loading-line {
-    display: inline-block;
-    animation: blink 0.9s step-end infinite;
-    color: var(--accent);
-  }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  /* ── Demo ── */
+  .demo-grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; }
+  .demo-controls { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; }
+  .demo-controls h4 { font-size: 0.85rem; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; margin-bottom: 1rem; }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { font-size: 0.78rem; color: var(--muted); display: block; margin-bottom: 4px; }
+  select, input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 6px; font-size: 0.85rem; }
+  select:focus, input:focus { outline: none; border-color: var(--accent); }
+  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 0.5rem; }
+  .action-btn { background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.2); color: #93c5fd; padding: 7px 6px; border-radius: 6px; font-size: 0.72rem; cursor: pointer; transition: all .2s; font-family: var(--mono); }
+  .action-btn:hover { background: rgba(59,130,246,.2); border-color: var(--accent); }
+  .action-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .demo-output { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; display: flex; flex-direction: column; }
+  .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+  .output-header h4 { font-size: 0.85rem; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
+  .phase-badge { padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; background: rgba(124,58,237,.2); color: #c4b5fd; border: 1px solid rgba(124,58,237,.3); }
+  .reward-display { font-size: 1.4rem; font-weight: 800; color: var(--green); }
+  pre { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: var(--mono); font-size: 0.75rem; overflow-y: auto; flex: 1; max-height: 420px; white-space: pre-wrap; word-break: break-all; color: #94a3b8; line-height: 1.5; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-  .phase-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    font-family: var(--mono);
-    margin-bottom: 6px;
-  }
-  .phase-fraud { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
-  .phase-skills { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
-  .phase-timeline { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
-  .phase-overseer { background: rgba(124,58,237,0.15); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.3); }
-  .phase-complete { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  /* ── API table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; padding: 10px 12px; background: var(--card); color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.05); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  code { font-family: var(--mono); background: rgba(59,130,246,.1); color: #93c5fd; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+  .method { font-weight: 700; font-family: var(--mono); }
+  .method.get { color: var(--green); }
+  .method.post { color: var(--yellow); }
 
-  .error-msg {
-    color: var(--red);
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    background: rgba(239,68,68,0.08);
-    border: 1px solid rgba(239,68,68,0.25);
-    border-radius: 6px;
-    padding: 10px 12px;
+  /* ── Links ── */
+  .links-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .link-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; text-decoration: none; transition: all .2s; display: flex; align-items: flex-start; gap: 12px; }
+  .link-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .link-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .link-title { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+  .link-desc { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* ── Section headings ── */
+  .section-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .1em; color: var(--purple); font-weight: 700; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.7rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .section-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .pipeline { grid-template-columns: 1fr; }
+    .pipeline-arrow { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .reward-grid, .demo-grid, .links-grid { grid-template-columns: 1fr; }
+    .action-grid { grid-template-columns: repeat(3, 1fr); }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="badge">Interactive Demo</div>
-  <h2>Try the Environment</h2>
-  <p>Run a live episode against the deployed environment. Start with Reset, then step through each agent phase.</p>
-</header>
+<!-- Nav -->
+<nav>
+  <div class="nav-brand">🛡️ Hiring Fleet <span class="nav-pill">v3.0.0</span></div>
+  <div class="nav-links">
+    <a href="#pipeline">Pipeline</a>
+    <a href="#reward">Reward</a>
+    <a href="#demo">Live Demo</a>
+    <a href="#api">API</a>
+    <a href="/docs">Swagger ↗</a>
+  </div>
+</nav>
 
-<div class="layout">
-  <!-- LEFT: Controls -->
-  <div class="panel">
-    <div class="panel-title">Controls</div>
-
-    <div>
-      <label>Difficulty</label>
-      <select id="difficulty">
-        <option value="easy">Easy — Clear fraud (8 steps)</option>
-        <option value="medium" selected>Medium — Subtle fraud (11 steps)</option>
-        <option value="hard">Hard — Sophisticated fraud (15 steps)</option>
-      </select>
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge"><span class="status-dot"></span> Environment Online</div>
+    <h1>Can four constrained AI specialists<br>catch fraud that <span>fools a single agent?</span></h1>
+    <p class="hero-sub">A multi-agent hiring pipeline where each specialist investigates one slice of a resume — and an Overseer synthesises their findings without ever seeing the raw evidence.</p>
+    <div class="hero-buttons">
+      <a href="#demo" class="btn btn-primary">▶ Try Live Demo</a>
+      <a href="/docs" class="btn btn-outline">API Docs ↗</a>
+      <a href="https://github.com/Ishika-eng/OpenEnv-Meta-Hackathon---Adversarial-Resume-Screening-Environment" target="_blank" class="btn btn-outline">GitHub ↗</a>
     </div>
-
-    <div>
-      <label>Seed</label>
-      <input type="number" id="seed" value="42" min="0" max="9999">
+    <div class="stats">
+      <div class="stat"><div class="stat-val">4</div><div class="stat-label">Specialist Agents</div></div>
+      <div class="stat"><div class="stat-val">36</div><div class="stat-label">Resume Episodes</div></div>
+      <div class="stat"><div class="stat-val">7</div><div class="stat-label">Reward Sub-functions</div></div>
+      <div class="stat"><div class="stat-val">+15.5%</div><div class="stat-label">GRPO Improvement</div></div>
     </div>
+  </div>
+</section>
 
-    <button class="btn-reset" id="btnReset" onclick="resetEpisode()">
-      ↺ Reset Episode
-    </button>
+<!-- Pipeline -->
+<section id="pipeline">
+  <div class="container">
+    <div class="section-label">Architecture</div>
+    <h2>Four-Phase Investigation Pipeline</h2>
+    <p class="section-sub">Each agent has a hard-enforced action whitelist and sees only its authorised resume sections. Information is genuinely siloed.</p>
 
-    <div>
-      <div class="actions-title">Actions</div>
-      <div class="actions-grid" id="actionsGrid">
-        <!-- populated dynamically -->
-        <button class="btn-action" disabled>verify_credential</button>
-        <button class="btn-action" disabled>check_reference ref2</button>
-        <button class="btn-action" disabled>check_reference ref1</button>
-        <button class="btn-action" disabled>view experience</button>
-        <button class="btn-action" disabled>view education</button>
-        <button class="btn-action" disabled>view skills</button>
-        <button class="btn-action" disabled>view header</button>
-        <button class="btn-action" disabled>view references</button>
-        <button class="btn-action" disabled>ask_clarification</button>
-        <button class="btn-action" disabled>submit_specialist_report</button>
-        <button class="btn-action" disabled>read fraud report</button>
-        <button class="btn-action" disabled>read skills report</button>
-        <button class="btn-action" disabled>read timeline report</button>
-        <button class="btn-action" disabled>submit reject</button>
-        <button class="btn-action" disabled>submit accept</button>
+    <div class="pipeline">
+      <div class="agent-card">
+        <div class="phase-num">1</div>
+        <div class="agent-icon">🔍</div>
+        <div class="agent-name">Fraud Specialist</div>
+        <div class="agent-desc">Detects fabricated credentials and suspicious references</div>
+        <div class="agent-tools">
+          <span class="tool-chip">verify_credential</span>
+          <span class="tool-chip">check_reference</span>
+          <span class="tool-chip">view_section</span>
+        </div>
+        <div class="agent-sections">Sections: header, references</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="agent-card">
+        <div class="phase-num">2</div>
+        <div class="agent-icon">💡</div>
+        <div class="agent-name">Skills Specialist</div>
+        <div class="agent-desc">Assesses technical fit against job requirements</div>
+        <div class="agent-tools">
+          <span class="tool-chip">view_section</span>
+          <span class="tool-chip">ask_clarification</span>
+        </div>
+        <div class="agent-sections">Sections: experience, education, skills, projects</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="agent-card">
+        <div class="phase-num">3</div>
+        <div class="agent-icon">📅</div>
+        <div class="agent-name">Timeline Specialist</div>
+        <div class="agent-desc">Checks chronological consistency and employment gaps</div>
+        <div class="agent-tools">
+          <span class="tool-chip">view_section</span>
+          <span class="tool-chip">ask_clarification</span>
+        </div>
+        <div class="agent-sections">Sections: header, summary, experience</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="agent-card">
+        <div class="phase-num">4</div>
+        <div class="agent-icon">⚖️</div>
+        <div class="agent-name">Overseer</div>
+        <div class="agent-desc">Reads all specialist reports and issues final verdict</div>
+        <div class="agent-tools">
+          <span class="tool-chip">read_reports</span>
+          <span class="tool-chip">request_reinvestigation</span>
+          <span class="tool-chip">submit_final_decision</span>
+        </div>
+        <div class="agent-sections">❌ Cannot view resume sections directly</div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- RIGHT: Observation -->
-  <div class="panel">
-    <div class="obs-header">
-      <div class="panel-title">Observation</div>
-      <div class="obs-stats">
-        <div class="stat-item">
-          <span class="stat-dot dot-blue"></span>
-          Phase steps: <span id="statPhase">—</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-dot dot-green"></span>
-          Total left: <span id="statTotal">—</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-dot dot-red"></span>
-          Violations: <span id="statViolations">—</span>
-        </div>
-        <div class="ctrl-row">
-          <button class="ctrl-btn" style="background:#3b4252;" onclick="clearOutput()" title="Clear">✕</button>
-          <button class="ctrl-btn" style="background:#2d7a3a;" onclick="toggleWrap()" title="Toggle wrap">≡</button>
-        </div>
+<!-- Reward -->
+<section id="reward">
+  <div class="container">
+    <div class="section-label">Reward Design</div>
+    <h2>7 Independent Sub-functions</h2>
+    <p class="section-sub">Dense rewards across all four phases. Terminal reward delegates to seven named functions — each testable and tunable in isolation. No LLM judge required.</p>
+
+    <div class="reward-grid">
+      <div class="reward-card">
+        <h4>Terminal Reward Sub-functions</h4>
+        <div class="sub-fn"><div class="fn-letter">A</div><div class="fn-name">_reward_decision_accuracy</div><div class="fn-max">+0.70</div></div>
+        <div class="sub-fn"><div class="fn-letter">B</div><div class="fn-name">_reward_specialist_quality</div><div class="fn-max">+0.22</div></div>
+        <div class="sub-fn"><div class="fn-letter">C</div><div class="fn-name">_reward_fleet_coordination</div><div class="fn-max">+0.08</div></div>
+        <div class="sub-fn"><div class="fn-letter">D</div><div class="fn-name">_reward_oversight_quality</div><div class="fn-max">+0.08</div></div>
+        <div class="sub-fn"><div class="fn-letter">E</div><div class="fn-name">_reward_investigation_quality</div><div class="fn-max">+0.05</div></div>
+        <div class="sub-fn"><div class="fn-letter">F</div><div class="fn-name">_reward_format_compliance</div><div class="fn-max">+0.05</div></div>
+        <div class="sub-fn"><div class="fn-letter">G</div><div class="fn-name">_reward_step_efficiency</div><div class="fn-max">+0.04</div></div>
+      </div>
+      <div class="reward-card">
+        <h4>Per-Step Rewards &amp; Anti-Exploit Penalties</h4>
+        <div class="reward-row"><span class="reward-name">verify_credential → FAILED</span><span class="reward-val">+0.05</span></div>
+        <div class="reward-row"><span class="reward-name">check_reference → fraud signal</span><span class="reward-val">+0.05</span></div>
+        <div class="reward-row"><span class="reward-name">view_section (high-value)</span><span class="reward-val">+0.03</span></div>
+        <div class="reward-row"><span class="reward-name">ask_clarification (substantive)</span><span class="reward-val">+0.03</span></div>
+        <div class="reward-row"><span class="reward-name">read_reports (all 3 read)</span><span class="reward-val">+0.03</span></div>
+        <div class="reward-row"><span class="reward-name">submit_specialist_report</span><span class="reward-val">up to +0.10</span></div>
+        <div class="reward-row"><span class="reward-name">Wrong + overconfident (≥0.7)</span><span class="reward-val neg">−0.05</span></div>
+        <div class="reward-row"><span class="reward-name">fraud_flag=True, empty reasoning</span><span class="reward-val neg">−0.05</span></div>
+        <div class="reward-row"><span class="reward-name">Fraud resume, zero tools used</span><span class="reward-val neg">−0.05</span></div>
+        <div class="reward-row"><span class="reward-name">Out-of-role action violation</span><span class="reward-val neg">−0.05 each</span></div>
       </div>
     </div>
-    <div class="obs-output" id="obsOutput">
-      <span class="prompt-hint">Click "↺ Reset Episode" to start a new episode.</span>
+  </div>
+</section>
+
+<!-- Live Demo -->
+<section id="demo">
+  <div class="container">
+    <div class="section-label">Interactive Demo</div>
+    <h2>Try the Environment</h2>
+    <p class="section-sub">Run a live episode against the deployed environment. Start with Reset, then step through each agent phase.</p>
+
+    <div class="demo-grid">
+      <div class="demo-controls">
+        <h4>Controls</h4>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select id="taskType">
+            <option value="easy">Easy — Obvious fraud (8 steps)</option>
+            <option value="medium" selected>Medium — Subtle fraud (11 steps)</option>
+            <option value="hard">Hard — Sophisticated fraud (15 steps)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Seed</label>
+          <input type="number" id="seed" value="42" min="0" max="999">
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:1rem;" onclick="resetEpisode()">↺ Reset Episode</button>
+
+        <h4 style="margin-bottom:0.6rem;">Actions</h4>
+        <div class="action-grid">
+          <button class="action-btn" onclick="step({action_type:'verify_credential'})" id="btn-verify">verify_credential</button>
+          <button class="action-btn" onclick="step({action_type:'check_reference',reference_id:'ref2'})" id="btn-ref2">check_reference ref2</button>
+          <button class="action-btn" onclick="step({action_type:'check_reference',reference_id:'ref1'})" id="btn-ref1">check_reference ref1</button>
+          <button class="action-btn" onclick="step({action_type:'view_section',section:'experience'})" id="btn-exp">view experience</button>
+          <button class="action-btn" onclick="step({action_type:'view_section',section:'education'})" id="btn-edu">view education</button>
+          <button class="action-btn" onclick="step({action_type:'view_section',section:'skills'})" id="btn-skills">view skills</button>
+          <button class="action-btn" onclick="step({action_type:'view_section',section:'header'})" id="btn-header">view header</button>
+          <button class="action-btn" onclick="step({action_type:'view_section',section:'references'})" id="btn-refs">view references</button>
+          <button class="action-btn" onclick="step({action_type:'ask_clarification',question:'Can you clarify your employment dates?'})" id="btn-clarify">ask_clarification</button>
+          <button class="action-btn" onclick="submitSpecialistReport()" id="btn-submit-spec">submit_specialist_report</button>
+          <button class="action-btn" onclick="step({action_type:'read_reports',report_target:'fraud_specialist'})" id="btn-read-fraud">read fraud report</button>
+          <button class="action-btn" onclick="step({action_type:'read_reports',report_target:'skills_specialist'})" id="btn-read-skills">read skills report</button>
+          <button class="action-btn" onclick="step({action_type:'read_reports',report_target:'timeline_specialist'})" id="btn-read-timeline">read timeline report</button>
+          <button class="action-btn" onclick="submitFinalDecision('reject')" id="btn-reject">submit reject</button>
+          <button class="action-btn" onclick="submitFinalDecision('accept')" id="btn-accept">submit accept</button>
+        </div>
+      </div>
+
+      <div class="demo-output">
+        <div class="output-header">
+          <h4>Observation</h4>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="phase-badge" class="phase-badge">—</span>
+            <span id="reward-display" class="reward-display">—</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-bottom:0.8rem;font-size:0.8rem;color:var(--muted);">
+          <span>Phase steps: <strong id="steps-left" style="color:var(--text)">—</strong></span>
+          <span>Total left: <strong id="total-left" style="color:var(--text)">—</strong></span>
+          <span>Violations: <strong id="violations" style="color:var(--red)">—</strong></span>
+        </div>
+        <pre id="obs-output">Click "↺ Reset Episode" to start a new episode.</pre>
+      </div>
     </div>
   </div>
-</div>
+</section>
+
+<!-- API -->
+<section id="api">
+  <div class="container">
+    <div class="section-label">API Reference</div>
+    <h2>Endpoints</h2>
+    <p class="section-sub">All endpoints return JSON. The full OpenAPI spec is available at <a href="/docs" style="color:var(--accent)">/docs</a>.</p>
+
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Path</th><th>Description</th><th>Key fields</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td><code>/reset</code></td>
+          <td>Start a new episode</td>
+          <td><code>task_type</code>, <code>seed</code></td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td><code>/step</code></td>
+          <td>Submit an action, receive next observation + reward</td>
+          <td><code>action_type</code> + role-specific fields</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td><code>/state</code></td>
+          <td>Current episode state (read-only)</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td><code>/health</code></td>
+          <td>Health check</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td><code>/docs</code></td>
+          <td>Interactive Swagger UI</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Links -->
+<section>
+  <div class="container">
+    <div class="section-label">Resources</div>
+    <h2>Materials</h2>
+    <p class="section-sub">Everything you need to run, train, and extend the Hiring Fleet environment.</p>
+
+    <div class="links-grid">
+      <a href="https://github.com/Ishika-eng/OpenEnv-Meta-Hackathon---Adversarial-Resume-Screening-Environment" target="_blank" class="link-card">
+        <div class="link-icon">💻</div>
+        <div><div class="link-title">GitHub Repository</div><div class="link-desc">Full source code, dataset, and evaluation scripts</div></div>
+      </a>
+      <a href="/docs" class="link-card">
+        <div class="link-icon">📖</div>
+        <div><div class="link-title">API Documentation</div><div class="link-desc">Interactive Swagger UI — try every endpoint in your browser</div></div>
+      </a>
+      <a href="https://huggingface.co/spaces/IshikaMahadar/resume-env" target="_blank" class="link-card">
+        <div class="link-icon">🤗</div>
+        <div><div class="link-title">HuggingFace Space</div><div class="link-desc">Live deployed environment — no setup required</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer style="text-align:center;padding:2rem;color:var(--muted);font-size:0.8rem;border-top:1px solid var(--border);">
+  Hiring Fleet v3.0.0 &nbsp;·&nbsp; OpenEnv Hackathon &nbsp;·&nbsp; Built with HuggingFace TRL + GRPO
+</footer>
 
 <script>
-// ── State ────────────────────────────────────────────────────────────────────
-let episodeId = null;
-let currentObs = null;
-let busy = false;
-let wrapEnabled = true;
+  const BASE = window.location.origin;
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function setLoading(yes) {
-  busy = yes;
-  document.getElementById('btnReset').disabled = yes;
-  document.querySelectorAll('.btn-action').forEach(b => {
-    if (yes) b.disabled = true;
-  });
-}
-
-function clearOutput() {
-  document.getElementById('obsOutput').innerHTML =
-    '<span class="prompt-hint">Output cleared.</span>';
-}
-
-function toggleWrap() {
-  wrapEnabled = !wrapEnabled;
-  const el = document.getElementById('obsOutput');
-  el.style.whiteSpace = wrapEnabled ? 'pre-wrap' : 'pre';
-}
-
-function phaseClass(phase) {
-  if (!phase) return '';
-  if (phase.includes('fraud')) return 'phase-fraud';
-  if (phase.includes('skills')) return 'phase-skills';
-  if (phase.includes('timeline')) return 'phase-timeline';
-  if (phase.includes('overseer')) return 'phase-overseer';
-  if (phase.includes('complete')) return 'phase-complete';
-  return '';
-}
-
-function renderObs(obs, reward, action_taken) {
-  if (!obs) return;
-
-  const out = document.getElementById('obsOutput');
-
-  // Stats bar
-  document.getElementById('statPhase').textContent =
-    obs.steps_remaining !== undefined ? obs.steps_remaining : '—';
-  document.getElementById('statTotal').textContent =
-    obs.total_steps_remaining !== undefined ? obs.total_steps_remaining : '—';
-  document.getElementById('statViolations').textContent =
-    obs.violations_count !== undefined ? obs.violations_count : '—';
-
-  let html = '';
-
-  // Phase badge
-  if (obs.current_phase) {
-    html += `<span class="phase-badge ${phaseClass(obs.current_phase)}">${obs.current_phase.replace('_', ' ')}</span>\\n`;
-  }
-
-  // Reward line
-  if (reward !== null && reward !== undefined) {
-    const cls = reward >= 0 ? 'reward-pos' : 'reward-neg';
-    html += `<span class="${cls}">reward: ${reward >= 0 ? '+' : ''}${Number(reward).toFixed(4)}</span>\\n`;
-  }
-
-  // Done
-  if (obs.done) {
-    html += `<span class="done-msg">✓ Episode complete</span>\\n`;
-  }
-
-  html += '\\n';
-
-  // Feedback / violations
-  if (obs.feedback) {
-    html += `<span class="feedback">⚠ ${escHtml(obs.feedback)}</span>\\n\\n`;
-  }
-
-  // Role instructions (truncated)
-  if (obs.role_instructions) {
-    const instr = obs.role_instructions.length > 300
-      ? obs.role_instructions.slice(0, 300) + '…'
-      : obs.role_instructions;
-    html += `<span class="section-hdr">── role_instructions ──</span>\\n${escHtml(instr)}\\n\\n`;
-  }
-
-  // Job description (short)
-  if (obs.job_description) {
-    const jd = obs.job_description.length > 200
-      ? obs.job_description.slice(0, 200) + '…'
-      : obs.job_description;
-    html += `<span class="section-hdr">── job_description ──</span>\\n${escHtml(jd)}\\n\\n`;
-  }
-
-  // Visible sections
-  if (obs.visible_sections && Object.keys(obs.visible_sections).length > 0) {
-    html += `<span class="section-hdr">── visible_sections ──</span>\\n`;
-    for (const [k, v] of Object.entries(obs.visible_sections)) {
-      html += `<span class="key">${escHtml(k)}</span>: ${escHtml(String(v).slice(0, 200))}${v && v.length > 200 ? '…' : ''}\\n`;
+  async function resetEpisode() {
+    const taskType = document.getElementById('taskType').value;
+    const seed = parseInt(document.getElementById('seed').value) || 42;
+    setOutput('Resetting episode...');
+    try {
+      const r = await fetch(`${BASE}/reset`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({task_type: taskType, seed})
+      });
+      const data = await r.json();
+      const obs = data.observation || data;
+      updateUI(obs, data.reward ?? 0);
+    } catch(e) {
+      setOutput(`Error: ${e.message}`);
     }
-    html += '\\n';
   }
 
-  // Specialist reports
-  if (obs.specialist_reports && obs.specialist_reports.length > 0) {
-    html += `<span class="section-hdr">── specialist_reports ──</span>\\n`;
-    obs.specialist_reports.forEach(r => {
-      html += `<span class="key">${escHtml(r.role || '?')}</span>: has_issues=<span class="${r.has_issues ? 'val-bool-t' : 'val-bool-f'}">${r.has_issues}</span>, confidence=${r.confidence || r.specialist_confidence || '?'}\\n`;
-      if (r.findings) html += `  ${escHtml(String(r.findings).slice(0, 150))}\\n`;
-    });
-    html += '\\n';
-  }
-
-  // Reference / verification results
-  if (obs.reference_response) {
-    html += `<span class="section-hdr">── reference_response ──</span>\\n${escHtml(obs.reference_response)}\\n\\n`;
-  }
-  if (obs.verification_result) {
-    html += `<span class="section-hdr">── verification_result ──</span>\\n${escHtml(obs.verification_result)}\\n\\n`;
-  }
-  if (obs.clarification_response) {
-    html += `<span class="section-hdr">── clarification_response ──</span>\\n${escHtml(obs.clarification_response)}\\n\\n`;
-  }
-
-  // Read report details
-  if (obs.read_report_details && Object.keys(obs.read_report_details).length > 0) {
-    html += `<span class="section-hdr">── read_report_details ──</span>\\n`;
-    for (const [k, v] of Object.entries(obs.read_report_details)) {
-      html += `<span class="key">${escHtml(k)}</span>: ${escHtml(String(v).slice(0, 250))}…\\n`;
+  async function step(action) {
+    setOutput('Sending action...');
+    try {
+      const r = await fetch(`${BASE}/step`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(action)
+      });
+      const data = await r.json();
+      const obs = data.observation || data;
+      updateUI(obs, data.reward ?? obs.reward ?? 0);
+    } catch(e) {
+      setOutput(`Error: ${e.message}`);
     }
-    html += '\\n';
   }
 
-  // Available actions
-  if (obs.available_actions && obs.available_actions.length > 0) {
-    html += `<span class="section-hdr">── available_actions ──</span>\\n`;
-    html += obs.available_actions.map(a => `<span class="val-str">${escHtml(a)}</span>`).join('  ');
-    html += '\\n';
-  }
-
-  // Steps
-  html += `\\n<span class="key">steps_remaining</span>: <span class="val-num">${obs.steps_remaining ?? '?'}</span>   `;
-  html += `<span class="key">total_steps_remaining</span>: <span class="val-num">${obs.total_steps_remaining ?? '?'}</span>   `;
-  html += `<span class="key">violations_count</span>: <span class="${(obs.violations_count || 0) > 0 ? 'val-bool-f' : 'val-bool-t'}">${obs.violations_count ?? 0}</span>`;
-
-  out.innerHTML = html;
-  out.scrollTop = out.scrollHeight;
-
-  // Rebuild action buttons
-  rebuildActions(obs);
-}
-
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-function rebuildActions(obs) {
-  const grid = document.getElementById('actionsGrid');
-  grid.innerHTML = '';
-
-  const available = (obs && obs.available_actions) ? obs.available_actions : [];
-  const phase = obs ? obs.current_phase : null;
-  const done = obs ? obs.done : false;
-
-  // Build buttons based on available actions from the server
-  const actionDefs = buildActionDefs(available, phase);
-
-  if (actionDefs.length === 0) {
-    const msg = document.createElement('div');
-    msg.style.cssText = 'color:var(--muted);font-family:var(--mono);font-size:0.75rem;grid-column:1/-1;padding:4px 0;';
-    msg.textContent = done ? '✓ Episode ended — click Reset to start again.' : 'No actions available. Reset the episode first.';
-    grid.appendChild(msg);
-    return;
-  }
-
-  actionDefs.forEach(({ label, action, disabled }) => {
-    const btn = document.createElement('button');
-    btn.className = 'btn-action';
-    btn.textContent = label;
-    btn.disabled = disabled || busy || done;
-    btn.onclick = () => takeAction(action);
-    grid.appendChild(btn);
-  });
-}
-
-function buildActionDefs(available, phase) {
-  if (!available || available.length === 0) return [];
-
-  const defs = [];
-  const avSet = new Set(available.map(a => a.toLowerCase()));
-
-  // Helper: check if action type is available
-  const has = (t) => avSet.has(t.toLowerCase()) || available.some(a => a.toLowerCase().includes(t.toLowerCase()));
-
-  if (has('verify_credential')) {
-    defs.push({ label: 'verify_credential', action: { action_type: 'verify_credential' } });
-  }
-  if (has('check_reference')) {
-    defs.push({ label: 'check_reference ref1', action: { action_type: 'check_reference', reference_id: 'ref1' } });
-    defs.push({ label: 'check_reference ref2', action: { action_type: 'check_reference', reference_id: 'ref2' } });
-  }
-  if (has('view_section')) {
-    const sections = ['header', 'summary', 'experience', 'education', 'skills', 'projects', 'references'];
-    sections.forEach(s => {
-      defs.push({ label: `view ${s}`, action: { action_type: 'view_section', section: s } });
+  function submitSpecialistReport() {
+    step({
+      action_type: 'submit_specialist_report',
+      findings: 'Investigation complete. Credential verification and references checked.',
+      has_issues: false,
+      specialist_confidence: 0.75
     });
   }
-  if (has('ask_clarification')) {
-    defs.push({ label: 'ask_clarification', action: { action_type: 'ask_clarification', question: 'Can you clarify your most recent role and responsibilities?' } });
-  }
-  if (has('submit_specialist_report')) {
-    defs.push({ label: 'submit report (issues)', action: { action_type: 'submit_specialist_report', findings: 'Suspicious indicators found.', has_issues: true, specialist_confidence: 0.7 } });
-    defs.push({ label: 'submit report (clean)', action: { action_type: 'submit_specialist_report', findings: 'No issues detected.', has_issues: false, specialist_confidence: 0.7 } });
-  }
-  if (has('read_reports')) {
-    defs.push({ label: 'read fraud report', action: { action_type: 'read_reports', report_target: 'fraud_specialist' } });
-    defs.push({ label: 'read skills report', action: { action_type: 'read_reports', report_target: 'skills_specialist' } });
-    defs.push({ label: 'read timeline report', action: { action_type: 'read_reports', report_target: 'timeline_specialist' } });
-  }
-  if (has('request_reinvestigation')) {
-    defs.push({ label: 'reinvestigate fraud', action: { action_type: 'request_reinvestigation', reinvestigation_target: 'fraud_specialist', reinvestigation_reason: 'Need deeper credential check.' } });
-  }
-  if (has('submit_final_decision')) {
-    defs.push({ label: 'submit accept', action: { action_type: 'submit_final_decision', decision: 'accept', fraud_flag: false, confidence: 0.8, fraud_reasoning: 'No fraud detected.' } });
-    defs.push({ label: 'submit reject', action: { action_type: 'submit_final_decision', decision: 'reject', fraud_flag: true, confidence: 0.8, fraud_reasoning: 'Fraudulent indicators detected.' } });
-  }
 
-  return defs;
-}
-
-// ── API calls ────────────────────────────────────────────────────────────────
-async function resetEpisode() {
-  if (busy) return;
-  setLoading(true);
-
-  const difficulty = document.getElementById('difficulty').value;
-  const seed = parseInt(document.getElementById('seed').value) || 42;
-
-  const out = document.getElementById('obsOutput');
-  out.innerHTML = '<span class="loading-line">▌</span> Resetting episode…';
-
-  // Reset stats
-  document.getElementById('statPhase').textContent = '—';
-  document.getElementById('statTotal').textContent = '—';
-  document.getElementById('statViolations').textContent = '—';
-
-  try {
-    const body = { task_type: difficulty, seed };
-    const res = await fetch('/reset', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+  function submitFinalDecision(decision) {
+    const isFraud = decision === 'reject';
+    step({
+      action_type: 'submit_final_decision',
+      decision,
+      fraud_flag: isFraud,
+      confidence: 0.80,
+      fraud_reasoning: isFraud ? 'Credential verification failed and reference denied employment.' : ''
     });
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`HTTP ${res.status}: ${err}`);
-    }
-
-    const data = await res.json();
-    // Normalize: the response may wrap obs in an "observation" key
-    let obs = data;
-    if (data.observation && typeof data.observation === 'object') {
-      obs = { ...data, ...data.observation };
-    }
-
-    episodeId = obs.episode_id || obs.id || null;
-    currentObs = obs;
-
-    renderObs(obs, null, null);
-  } catch (e) {
-    out.innerHTML = `<div class="error-msg">Reset failed: ${escHtml(e.message)}\\n\\nMake sure the server is running and accessible.</div>`;
-    rebuildActions(null);
-  } finally {
-    setLoading(false);
   }
-}
 
-async function takeAction(action) {
-  if (busy || !currentObs) return;
-  setLoading(true);
+  function updateUI(obs, reward) {
+    const phase = obs.current_phase || '—';
+    document.getElementById('phase-badge').textContent = phase.replace(/_/g, ' ');
+    const rVal = typeof reward === 'number' ? reward : (obs.reward ?? 0);
+    const rDisplay = document.getElementById('reward-display');
+    rDisplay.textContent = `+${rVal.toFixed(4)}`;
+    rDisplay.style.color = rVal > 0 ? 'var(--green)' : rVal < 0 ? 'var(--red)' : 'var(--muted)';
+    document.getElementById('steps-left').textContent = obs.steps_remaining ?? '—';
+    document.getElementById('total-left').textContent = obs.total_steps_remaining ?? '—';
+    document.getElementById('violations').textContent = obs.violations_count ?? 0;
 
-  const out = document.getElementById('obsOutput');
-  const prevContent = out.innerHTML;
-  out.innerHTML = prevContent + '\\n<span class="loading-line">▌</span>';
-
-  try {
-    // Attach episode_id if we have one
-    const payload = { ...action };
-    if (episodeId) payload.episode_id = episodeId;
-
-    const res = await fetch('/step', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`HTTP ${res.status}: ${err}`);
-    }
-
-    const data = await res.json();
-    let obs = data.observation || data;
-    if (data.observation && typeof data.observation === 'object') {
-      obs = { ...data, ...data.observation };
-    }
-    const reward = data.reward !== undefined ? data.reward : obs.reward;
-
-    currentObs = obs;
-    renderObs(obs, reward, action);
-  } catch (e) {
-    out.innerHTML = prevContent;
-    const errDiv = document.createElement('div');
-    errDiv.className = 'error-msg';
-    errDiv.textContent = 'Step failed: ' + e.message;
-    out.appendChild(errDiv);
-  } finally {
-    setLoading(false);
+    // Show clean observation
+    const display = {
+      current_phase: obs.current_phase,
+      role_instructions: obs.role_instructions ? obs.role_instructions.slice(0, 120) + '…' : undefined,
+      available_actions: obs.available_actions,
+      steps_remaining: obs.steps_remaining,
+      total_steps_remaining: obs.total_steps_remaining,
+      violations_count: obs.violations_count,
+      visible_sections: obs.visible_sections && Object.keys(obs.visible_sections).length
+        ? Object.fromEntries(Object.entries(obs.visible_sections).map(([k,v]) => [k, v?.slice(0,80)+'…']))
+        : undefined,
+      specialist_reports: obs.specialist_reports?.length ? obs.specialist_reports.map(r => ({
+        role: r.specialist_role, has_issues: r.has_issues, confidence: r.confidence,
+        findings: r.findings?.slice(0,80)+'…'
+      })) : undefined,
+      reference_response: obs.reference_response || undefined,
+      verification_result: obs.verification_result || undefined,
+      clarification_response: obs.clarification_response || undefined,
+      read_report_details: obs.read_report_details && Object.keys(obs.read_report_details).length
+        ? obs.read_report_details : undefined,
+      feedback: obs.feedback,
+      reward: rVal,
+      done: obs.done,
+    };
+    // Remove undefined keys
+    Object.keys(display).forEach(k => display[k] === undefined && delete display[k]);
+    setOutput(JSON.stringify(display, null, 2));
   }
-}
+
+  function setOutput(text) {
+    document.getElementById('obs-output').textContent = text;
+  }
 </script>
 </body>
 </html>"""
-
-
-@app.get("/", response_class=HTMLResponse)
-@app.get("/web", response_class=HTMLResponse)
-async def home():
-    """Interactive demo home page for the Hugging Face Space."""
-    return INTERACTIVE_DEMO_HTML
 
 
 @app.get("/health")
