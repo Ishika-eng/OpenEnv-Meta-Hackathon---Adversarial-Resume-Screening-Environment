@@ -20,10 +20,39 @@ Hiring Fleet is a 4-phase multi-agent OpenEnv environment (v3.0.0) that mirrors 
 
 Each episode runs four sequential phases:
 
-Fraud Specialist → Skills Specialist → Timeline Specialist → Overseer
+<div style="display:flex; gap:12px; align-items:center; font-family:monospace; font-size:13px; margin:20px 0;">
 
-verify credentials → check technical fit → find employment gaps → reads all 3 reports  
-call references → ask clarifying questions → spot date conflicts → issues final verdict  
+  <div style="background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; min-width:140px;">
+    <div style="color:#89b4fa; font-weight:bold; margin-bottom:8px;">① Fraud Specialist</div>
+    <div>verify credentials</div>
+    <div>call references</div>
+  </div>
+
+  <div style="color:#a6e3a1; font-size:20px; font-weight:bold;">→</div>
+
+  <div style="background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; min-width:140px;">
+    <div style="color:#89b4fa; font-weight:bold; margin-bottom:8px;">② Skills Specialist</div>
+    <div>check technical fit</div>
+    <div>ask clarifying questions</div>
+  </div>
+
+  <div style="color:#a6e3a1; font-size:20px; font-weight:bold;">→</div>
+
+  <div style="background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; min-width:140px;">
+    <div style="color:#89b4fa; font-weight:bold; margin-bottom:8px;">③ Timeline Specialist</div>
+    <div>find employment gaps</div>
+    <div>spot date conflicts</div>
+  </div>
+
+  <div style="color:#a6e3a1; font-size:20px; font-weight:bold;">→</div>
+
+  <div style="background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; min-width:140px;">
+    <div style="color:#89b4fa; font-weight:bold; margin-bottom:8px;">④ Overseer</div>
+    <div>reads all 3 reports</div>
+    <div>issues final verdict</div>
+  </div>
+
+</div>
 
 ### Key design properties:
 
