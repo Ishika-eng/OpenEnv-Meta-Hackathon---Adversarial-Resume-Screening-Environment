@@ -22,7 +22,8 @@ tags: [openenv]
 | Resource | Link |
 |:---|:---|
 | 🌐 **Live Environment** | [HuggingFace Space — resume-env](https://huggingface.co/spaces/IshikaMahadar/resume-env) |
-| 📓 **Colab Training Notebook** | [train_grpo_fleet.ipynb](./train_grpo_fleet.ipynb) |
+| 📝 **Blog Post** | [blog.md — We Made AI Detectives That Catch Fake Resumes](https://huggingface.co/spaces/IshikaMahadar/resume-env/blob/main/blog.md) |
+| 📓 **Training Notebook** | [train_grpo_fleet.ipynb](https://huggingface.co/spaces/IshikaMahadar/resume-env/blob/main/train_grpo_fleet.ipynb) |
 | 🤖 **Trained LoRA Adapter** | [IshikaMahadar/hiring-fleet-grpo-adapter](https://huggingface.co/IshikaMahadar/hiring-fleet-grpo-adapter) |
 | 📈 **GRPO Reward Curve** | 0.736 → 0.850 over 800 steps — see Training section |
 | 📊 **Evaluation Results** | Rule-based 0.873 vs Fine-tuned 0.870 — see Evaluation section |
