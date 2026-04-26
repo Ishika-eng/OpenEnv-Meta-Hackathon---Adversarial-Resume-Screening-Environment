@@ -20,47 +20,11 @@ Hiring Fleet is a 4-phase multi-agent OpenEnv environment (v3.0.0) that mirrors 
 
 Each episode runs four sequential phases:
 
-<<<<<<< HEAD
 ```
 ① Fraud Specialist   →  ② Skills Specialist    →    ③ Timeline Specialist  →  ④ Overseer
  -verify credentials    -check technical fit         -find employment gaps     -reads all 3 reports
  -call references       -ask clarifying questions    -spot date conflicts      -issues final verdict
 ```
-=======
-<div style="display:flex; gap:12px; align-items:center; font-family:monospace; font-size:13px; margin:20px 0;">
-
-  <div style="background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; min-width:140px;">
-    <div style="color:#89b4fa; font-weight:bold; margin-bottom:8px;">① Fraud Specialist</div>
-    <div>verify credentials</div>
-    <div>call references</div>
-  </div>
-
-  <div style="color:#a6e3a1; font-size:20px; font-weight:bold;">→</div>
-
-  <div style="background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; min-width:140px;">
-    <div style="color:#89b4fa; font-weight:bold; margin-bottom:8px;">② Skills Specialist</div>
-    <div>check technical fit</div>
-    <div>ask clarifying questions</div>
-  </div>
-
-  <div style="color:#a6e3a1; font-size:20px; font-weight:bold;">→</div>
-
-  <div style="background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; min-width:140px;">
-    <div style="color:#89b4fa; font-weight:bold; margin-bottom:8px;">③ Timeline Specialist</div>
-    <div>find employment gaps</div>
-    <div>spot date conflicts</div>
-  </div>
-
-  <div style="color:#a6e3a1; font-size:20px; font-weight:bold;">→</div>
-
-  <div style="background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; min-width:140px;">
-    <div style="color:#89b4fa; font-weight:bold; margin-bottom:8px;">④ Overseer</div>
-    <div>reads all 3 reports</div>
-    <div>issues final verdict</div>
-  </div>
-
-</div>
->>>>>>> 20920133ccded0d4c58562f5cd5c28b19da5956a
 
 ### Key design properties:
 
@@ -165,19 +129,14 @@ Total reward range: [0.0, 1.0], fully deterministic, no LLM judge.
 
 ## 6. Post-Training and Self-Improvement Strategy
 
-Stage 1 (completed): Role discipline and fraud detection  
-
+### Stage 1 (completed): Role discipline and fraud detection  
 We trained Qwen/Qwen2.5-1.5B-Instruct using GRPO via HuggingFace TRL and Unsloth on a T4 GPU (free tier). LoRA fine-tuning (r=16) over 3 epochs, 984 gradient steps, on 656 prompt-completion pairs collected from live environment rollouts.
 
 Results:  
 Training reward improved from 0.736 → 0.850 — a +15.5% gain over 800 steps.  
 
-<<<<<<< HEAD
 ![GRPO Reward Curve](assets/reward_curve.png)
 *Reward over training steps. Upward trend confirms model learning role-appropriate JSON generation and investigative prioritisation.*
-=======
-Show Image Reward over training steps. Upward trend confirms model learning role-appropriate JSON generation and investigative prioritisation.
->>>>>>> 20920133ccded0d4c58562f5cd5c28b19da5956a
 
 ### Post-training evaluation
 
@@ -186,12 +145,8 @@ Show Image Reward over training steps. Upward trend confirms model learning role
 | Rule-based baseline | 0.747 | 0.873 | 1.000 | 0.873 |
 | Fine-tuned (GRPO) | 0.722 | 0.888 | 1.000 | 0.870 |
 
-<<<<<<< HEAD
-[Before vs After Comparison](assets/comparison_chart.png)
+![Before vs After Comparison](assets/comparison_chart.png)
 *Before vs after comparison across difficulty tiers. Fine-tuned model matches hand-crafted rule-based expert system.*
-=======
-Show Image
->>>>>>> 20920133ccded0d4c58562f5cd5c28b19da5956a
 
 The fine-tuned 1.5B model learned to:
 - Output valid role-gated JSON actions reliably (zero format violations post-training)  
@@ -199,12 +154,18 @@ The fine-tuned 1.5B model learned to:
 - Read all three specialist reports as Overseer before deciding (thoroughness bonus)  
 - Include fraud indicator keywords in reasoning (failed, denied, fabricated)  
 
-### Why GRPO fits this environment
-
-This environment is a natural fit for GRPO's verifiable reward paradigm. All 12 reward components are computed deterministically from ground-truth fields — no LLM judge, no human annotation. The reward signal is objective, reproducible, and dense across all 4 phases, giving GRPO stable gradients even on a 1.5B model.
-
+### Stage 2 (roadmap): Long-horizon trajectory coherence
+ 
+Stage 2 adds a **trajectory-level coherence bonus** — rewarding episodes where specialist `has_issues` flags correctly predict the Overseer's final verdict across the full 4-phase episode. This directly targets Theme 2 (Long-Horizon Planning): the agent must plan its investigation from Phase 1 with the final verdict in mind, not just optimise each phase independently.
+ 
+This aligns with the Scale AI bonus theme — long-horizon HR workflow planning — and extends GRPO training to reward coherent multi-step trajectories rather than individual step quality.
+ 
+### Self-improvement mechanism
+ 
+The environment supports **adaptive difficulty escalation**: after a model achieves >0.85 average reward on easy tier, training automatically shifts to medium, then hard — a curriculum that prevents the model from overfitting to easy patterns. The 42% fraud ratio per tier was specifically chosen to maintain reward variance and prevent a trivial always-reject policy from achieving high scores.
+ 
 ---
-
+ 
 ## Links
 
 Live Environment: https://huggingface.co/spaces/IshikaMahadar/resume-env  
