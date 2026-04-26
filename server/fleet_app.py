@@ -348,26 +348,31 @@ The environment will populate with the first agent (Fraud Specialist).</pre>
 </footer>
 
 <script>
-  // Use relative paths for better compatibility with HF Space iframes
-  const API_PREFIX = ".";
+  // Use absolute paths for API calls to avoid 404s in HF Space iframes
+  const API_PREFIX = window.location.origin;
 
   async function resetEpisode() {
     const taskType = document.getElementById('taskType').value;
     const seed = parseInt(document.getElementById('seed').value) || 42;
     
     setLoading(true);
+    const url = `${API_PREFIX}/reset`;
+    console.log(`Fetching: ${url}`);
     try {
-      const response = await fetch(`${API_PREFIX}/reset`, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ task_type: taskType, seed })
       });
       
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || `HTTP ${response.status}`);
+      }
       const data = await response.json();
       updateUI(data.observation || data, data.reward || 0);
     } catch (err) {
-      document.getElementById('obs-output').textContent = `Error: ${err.message}\nCheck if the environment server is running.`;
+      document.getElementById('obs-output').textContent = `Error: ${err.message}\nURL: ${url}\nCheck the browser console for details.`;
     } finally {
       setLoading(false);
     }
@@ -375,18 +380,23 @@ The environment will populate with the first agent (Fraud Specialist).</pre>
 
   async function step(action) {
     setLoading(true);
+    const url = `${API_PREFIX}/step`;
+    console.log(`Fetching: ${url}`);
     try {
-      const response = await fetch(`${API_PREFIX}/step`, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(action)
       });
       
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || `HTTP ${response.status}`);
+      }
       const data = await response.json();
       updateUI(data.observation || data, data.reward || 0);
     } catch (err) {
-      document.getElementById('obs-output').textContent = `Error: ${err.message}`;
+      document.getElementById('obs-output').textContent = `Error: ${err.message}\nURL: ${url}`;
     } finally {
       setLoading(false);
     }
